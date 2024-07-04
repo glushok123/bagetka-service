@@ -9,21 +9,17 @@ use Elao\Enum\ReadableEnumInterface;
 use Elao\Enum\ReadableEnumTrait;
 
 #[ReadableEnum(prefix: 'officeType.', useValueAsDefault: true)]
-enum OfficeType: string implements ReadableEnumInterface
+enum RoleUser: string implements ReadableEnumInterface
 {
     use ExtrasTrait, ReadableEnumTrait;
 
-    #[EnumCase(extras: ['nameRu' => 'Новокузнецкая'])]
-    case novokuznetsk = 'Новокузнецкая';
+    #[EnumCase(extras: ['nameRu' => 'Админ'])]
+    case admin = 'Админ';
 
    #[EnumCase(extras: ['nameRu' => 'Арбатская'])]
-    case arbatskaya = 'Арбатская';
+    case manager = 'Менеджер';
 
     #[EnumCase(extras: ['nameRu' => 'Баррикадная'])]
-    case barricade = 'Баррикадная';
-
-    #[EnumCase(extras: ['nameRu' => 'Все'])]
-    case all = 'Все';
-
+    case master = 'Мастер';
 
 }

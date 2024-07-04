@@ -3,14 +3,11 @@
 namespace App\Controller\Admin;
 
 use App\Dto\User\UserDto;
-use App\Entity\Delivery;
 use App\Entity\Embeddable\Hash;
 use App\Entity\Materials;
 use App\Entity\Order;
 use App\Entity\User;
 use App\Enum\NotificationEvent;
-use DateTimeImmutable;
-use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
@@ -29,7 +26,7 @@ class DashboardController extends AbstractDashboardController
         // Option 1. You can make your dashboard redirect to some common page of your backend
         //
         $adminUrlGenerator = $this->container->get(AdminUrlGenerator::class);
-        return $this->redirect($adminUrlGenerator->setController(UserCrudController::class)->generateUrl());
+        return $this->redirect($adminUrlGenerator->setController(OrderCrudController::class)->generateUrl());
 
         // Option 2. You can make your dashboard redirect to different pages depending on the user
         //
@@ -51,10 +48,13 @@ class DashboardController extends AbstractDashboardController
 
     public function configureMenuItems(): iterable
     {
-         //yield MenuItem::linkToDashboard('', 'fa fa-home');
-         yield MenuItem::linkToCrud('Пользователи', 'fas fa-user', User::class);
-         yield MenuItem::linkToCrud('Заказы', 'fas fa-list', Order::class);
-         yield MenuItem::linkToCrud('Материалы', 'fas fa-list', Materials::class);
-         yield MenuItem::linkToCrud('Доставка', 'fas fa-list', Delivery::class);
+        //yield MenuItem::linkToDashboard('', 'fa fa-home');
+        yield MenuItem::linkToCrud('Пользователи', 'fas fa-user', User::class)->setPermission('ROLE_ADMIN');
+        //yield MenuItem::linkToCrud('Заказы (список)', 'fas fa-list', Order::class);
+        //yield MenuItem::linkToCrud('Материалы (список)', 'fas fa-list', Materials::class);
+        //yield MenuItem::linkToCrud('Доставка (список)', 'fas fa-list', Delivery::class);
+
+        yield MenuItem::linkToRoute('Заказы (Календарь)', 'fas fa-calendar', 'order_index');
+        yield MenuItem::linkToRoute('Материалы (Календарь)', 'fas fa-calendar', 'materials_index');
     }
 }

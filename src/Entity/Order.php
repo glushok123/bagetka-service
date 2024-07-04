@@ -26,7 +26,7 @@ class Order
     private ?User $user = null;
 
     #[ORM\Column(nullable: true)]
-    private ?bool $isSendSms = null;
+    private ?bool $isSendSms = false;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $pdf = null;
@@ -41,10 +41,16 @@ class Order
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?bool $isImportant = null;
+    private ?bool $isImportant = false;
 
     #[ORM\Column(nullable: true)]
-    private ?bool $isDeleted = null;
+    private ?bool $isDeleted = false;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $isCreateManager = false;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $isFinished = false;
 
     public function getOfficeType(): ?OfficeType
     {
@@ -121,7 +127,7 @@ class Order
         return $this->isSendSms;
     }
 
-    public function setSendSms(?bool $isSendSms): static
+    public function setIsSendSms(?bool $isSendSms): static
     {
         $this->isSendSms = $isSendSms;
 
@@ -157,7 +163,7 @@ class Order
         return $this->isImportant;
     }
 
-    public function setImportant(?bool $isImportant): static
+    public function setIsImportant(?bool $isImportant): static
     {
         $this->isImportant = $isImportant;
 
@@ -169,9 +175,33 @@ class Order
         return $this->isDeleted;
     }
 
-    public function setDeleted(?bool $isDeleted): static
+    public function setIsDeleted(?bool $isDeleted): static
     {
         $this->isDeleted = $isDeleted;
+
+        return $this;
+    }
+
+    public function isCreateManager(): ?bool
+    {
+        return $this->isCreateManager;
+    }
+
+    public function setIsCreateManager(?bool $isCreateManager): static
+    {
+        $this->isCreateManager = $isCreateManager;
+
+        return $this;
+    }
+
+    public function isFinished(): ?bool
+    {
+        return $this->isFinished;
+    }
+
+    public function setIsFinished(?bool $isFinished): static
+    {
+        $this->isFinished = $isFinished;
 
         return $this;
     }

@@ -1,8 +1,11 @@
-{% extends 'base.html.twig' %}
+{# ./src/templates/home/index.html.twig #}
+{% extends '@EasyAdmin/page/content.html.twig' %}
 
-{% block title %}Hello MaterialsController!{% endblock %}
+{# Let\'s remove/empty the header #}
+{% block content_header_wrapper %} {% endblock content_header_wrapper %}
 
-{% block body %}
+
+{% block main %}
 <style>
     .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
     .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
@@ -18,3 +21,6 @@
     </ul>
 </div>
 {% endblock %}
+
+{# Let\'s remove/empty the footer #}
+{% block content_footer_wrapper %} {% endblock content_footer_wrapper %}

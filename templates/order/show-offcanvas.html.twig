@@ -1,0 +1,53 @@
+<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasExampleLabel">Обработка заказа</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Закрыть"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="data-order" action="javascript:void(0);">
+            <input type="hidden" class="form-control" name="orderId" value="0">
+            <div class="mb-3">
+                <label class="form-label">Номер</label>
+                <input type="number" class="form-control" name="number" value="">
+            </div>
+
+            <div class="mb-3 hidden">
+                <label class="form-label">Телефон</label>
+                <input type="text" class="form-control" name="phone">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Мастерская</label>
+                <select class="form-select" aria-label="Default select example" name="officeType">
+                    <option value="Новокузнецкая">Новокузнецкая</option>
+                    <option value="Арбатская">Арбатская</option>
+                    <option value="Баррикадная">Баррикадная</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Дата выполнения</label>
+                <input type="date" class="form-control" name="date">
+            </div>
+
+            <div class="mb-3 {% if user.role.value == 'Мастер'%} hidden {% endif %}">
+                <label class="form-label">PDF</label>
+                <input type="file" class="form-control" name="pdf" accept="application/pdf">
+            </div>
+
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" name="isImportant">
+                <label class="form-check-label" for="exampleCheck1">Срочный заказ</label>
+            </div>
+            <div class="mb-3 form-check {% if user.role.value == 'Менеджер'%} hidden {% endif %}">
+                <input type="checkbox" class="form-check-input" name="isFinished">
+                <label class="form-check-label" for="exampleCheck1">Заказ готов</label>
+            </div>
+            <hr>
+            <button class="btn btn-primary" id="button-save-order">Сохранить</button>
+            <button class="btn btn-danger" id="button-save-delete">Удалить</button>
+            <br><br>
+            <a target="_blank" class="btn btn-danger" href="/upload/files/c96e15f45e076628adcd8d13dfc80dd7.pdf" id="button-save-order">Открыть Pdf</a>
+        </form>
+    </div>
+</div>

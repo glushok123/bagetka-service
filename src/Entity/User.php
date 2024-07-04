@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use App\Enum\OfficeType;
+use App\Enum\RoleUser;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -39,6 +41,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?bool $deleted = null;
 
+    #[ORM\Column(nullable: false, enumType: OfficeType::class)]
+    public OfficeType $officeType;
+
+    #[ORM\Column(nullable: false, enumType: RoleUser::class)]
+    public RoleUser $role;
+
     /**
      * @var Collection<int, Order>
      */
@@ -57,6 +65,39 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->materials = new ArrayCollection();
     }
 
+    public function getOfficeType(): ?OfficeType
+    {
+        return $this->officeType;
+    }
+
+    public function getOfficeTypeNameRu(): ?string
+    {
+        return $this->officeType->getExtra('nameRu');
+    }
+
+    public function setOfficeType(?OfficeType $type): static
+    {
+        $this->officeType = $type;
+
+        return $this;
+    }
+
+    public function getRole(): ?RoleUser
+    {
+        return $this->role;
+    }
+
+    public function getRoleNameRu(): ?string
+    {
+        return $this->role->getExtra('nameRu');
+    }
+
+    public function setRole(?RoleUser $role): static
+    {
+        $this->role = $role;
+
+        return $this;
+    }
     public function getId(): ?int
     {
         return $this->id;

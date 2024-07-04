@@ -1,0 +1,83 @@
+{# ./src/templates/home/index.html.twig #}
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{# Let\'s remove/empty the header #}
+{% block content_header_wrapper %} {% endblock content_header_wrapper %}
+
+{% block main %}
+
+
+    {% include '/order/show-offcanvas.html.twig' %}
+
+
+    <div class="row text-center justify-content-center mb-2 " id="block-spinner">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <!--div class="row justify-content-center">
+            <button type="button" class="btn  button-name-office" style="background: #a7f2af">Новокузнецкая</button>
+            <button type="button" class="btn  button-name-office" style="background: #8c90ff">Арбатская</button>
+            <button type="button" class="btn  button-name-office" style="background: #ba6af7">Баррикадная</button>
+        </div-->
+
+        <div class="row">
+            <div class="col-12 col-md-12 col-lg-12 col-xl-12 col-xxl-12">
+                {% if user.officeType.value == 'Новокузнецкая' %}
+                    <div class="calendar text-center">
+                        <button type="button" class="btn  button-name-office" style="background: #a7f2af">Новокузнецкая
+                        </button>
+
+                        {% include '/order/table/novokuz.html.twig' %}
+
+                    </div>
+                {% endif %}
+                {% if user.officeType.value == 'Арбатская' %}
+                    <div class="calendar text-center">
+                        <button type="button" class="btn  button-name-office" style="background: #8c90ff">Арбатская
+                        </button>
+
+                        {% include '/order/table/arbat.html.twig' %}
+                    </div>
+                {% endif %}
+                {% if user.officeType.value == 'Баррикадная' %}
+                    <div class="calendar text-center">
+                        <button type="button" class="btn  button-name-office" style="background: #ba6af7">Баррикадная
+                        </button>
+
+                        {% include '/order/table/baricad.html.twig' %}
+
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-6 but-pagination left align-middle"><a href="#"><i class="fa fa-arrow-circle-left"></i>назад
+                    неделя</a></div>
+            <div class="col-6 text-end but-pagination right align-middle"><a href="#" class="align-middle">вперед неделя <i
+                            class="fa fa-arrow-circle-right"></i> </a></div>
+        </div>
+    </div>
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.6.1/toastify.min.css"
+          integrity="sha512-UiKdzM5DL+I+2YFxK+7TDedVyVm7HMp/bN85NeWMJNYortoll+Nd6PU9ZDrZiaOsdarOyk9egQm6LOJZi36L2g=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.6.1/toastify.min.js"
+            integrity="sha512-79j1YQOJuI8mLseq9icSQKT6bLlLtWknKwj1OpJZMdPt2pFBry3vQTt+NZuJw7NSd1pHhZlu0s12Ngqfa371EA=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="/admin_assets/jquery.js" type="text/javascript"></script>
+    <script src="/admin_assets/order/js/order_base.js" type="text/javascript"></script>
+    <script src="/admin_assets/order/js/order_admin.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="/admin_assets/order/css/style.css">
+{% endblock %}
+
+
+
+{# Let\'s remove/empty the footer #}
+{% block content_footer_wrapper %} {% endblock content_footer_wrapper %}
