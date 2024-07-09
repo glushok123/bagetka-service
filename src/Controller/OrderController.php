@@ -64,6 +64,41 @@ class OrderController extends AbstractController
         ]);
     }
 
+    #[Route('/', name: 'order_index_2')]
+    public function index2(
+        Request             $request,
+        AdminContextFactory $adminContextFactory,
+        Environment         $twig
+    ): Response
+    {
+
+        if(empty($this->getUser())){
+            return $this->redirect('/login');
+        }
+
+        $dashboardController = new DashboardController();
+        $dashboardController->setContainer($this->container);
+        $adminContext = $adminContextFactory->create($request, $dashboardController, null);
+        $twig->addGlobal('ea', $adminContext);
+        $request->attributes->set(EA::CONTEXT_REQUEST_ATTRIBUTE, $adminContext);
+
+        $template = 'order/admin.html.twig';
+
+        switch ($this->getUser()->getRole()->value) {
+            case 'Менеджер':
+                $template = 'order/manager.html.twig';
+                break;
+            case 'Админ':
+                $template = 'order/admin.html.twig';
+                break;
+            case 'Мастер':
+                $template = 'order/master.html.twig';
+                break;
+        }
+        return $this->render($template, [
+            'user' => $this->getUser(),
+        ]);
+    }
     #[Route('/order/get-collection', name: 'order_get_collection', methods: ['GET'])]
     public function getCollection(#[CurrentUser] ?User $user, #[MapQueryString] ?RequestGetCollectionDto $dto): Json
     {

@@ -190,7 +190,6 @@ function saveOrder() {
 }
 
 function showOrder(orderId) {
-    console.log(orderId)
     $.ajax({
         url: '/order/get',
         method: 'get',
@@ -208,17 +207,37 @@ function showOrder(orderId) {
             var us_date = euro_date.reverse().join('-');
 
             $('input[name=date]').val(us_date)
-            $("select[name=officeType] option[value=" + data.result.officeType + "]").attr('selected', 'selected');
+
+            //$("select[name=officeType] option[value=Новокузнецкая]").prop('selected', false);
+            //$("select[name=officeType] option[value=Арбатская]").prop('selected', false);
+            //$("option[value=Баррикадная]").removeAttr('selected');
+            //$("option[value=Баррикадная]").prop('selected', -1);
+            //$("option[value=Баррикадная]")[0].prop('selected', false);
+            //$("select[name=officeType] option:selected").prop("selected", false)
+            $("select[name=officeType]").val([]);
+            $('select[name=officeType]').val('')
+            $("select[name=officeType] option").prop("selected", false);
+            //$("select[name=officeType] option[value=" + data.result.officeType + "]").prop('selected', true);
+            //$("select[name=officeType] option[value=Баррикадная]").prop('selected', false);
+            $("select[name=officeType]").val(data.result.officeType);
 
             if (data.result.isImportant === true) {
                 $('input[name=isImportant]').prop('checked', true);
             } else {
                 $('input[name=isImportant]').prop('checked', false);
             }
+
             if (data.result.isFinished === true) {
                 $('input[name=isFinished]').prop('checked', true);
             } else {
                 $('input[name=isFinished]').prop('checked', false);
+            }
+
+            if(data.result.pdf === null){
+                $('#button-open-pdf').addClass('hidden');
+            }else{
+                $('#button-open-pdf').removeClass('hidden');
+                $('#button-open-pdf').prop('href', '/upload/files/' + data.result.pdf)
             }
         },
         error: function (jqXHR, exception) {
@@ -239,17 +258,23 @@ function clearFormOrder(officeType, date) {
     $('input[name=phone]').val('')
     $('input[name=isFinished]').prop('checked', false);
     $('input[name=isImportant]').prop('checked', false);
+    $('#button-open-pdf').removeClass('hidden');
 
     var euro_date = date;
     euro_date = euro_date.split('.');
     var us_date = euro_date.reverse().join('-');
 
     $('input[name=date]').val(us_date)
-    $("select[name=officeType] option[value=" + officeType + "]").attr('selected', 'selected');
+
+    $("select[name=officeType]").val([]);
+    $('select[name=officeType]').val('')
+    $("select[name=officeType] option").prop("selected", false);
+    //$("select[name=officeType] option[value=" + data.result.officeType + "]").prop('selected', true);
+    //$("select[name=officeType] option[value=Баррикадная]").prop('selected', false);
+    $("select[name=officeType]").val(officeType);
 }
 
 function deleteOrder() {
-    //TODO
     if (confirm('Вы уверены что хотите удалить заказ?') === true) {
         $.ajax({
             url: '/order/remove',

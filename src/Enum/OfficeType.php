@@ -22,6 +22,9 @@ enum OfficeType: string implements ReadableEnumInterface
     #[EnumCase(extras: ['nameRu' => 'Баррикадная'])]
     case barricade = 'Баррикадная';
 
+    #[EnumCase(extras: ['nameRu' => 'Менеджер'])]
+    case manager = 'Менеджер';
+
     #[EnumCase(extras: ['nameRu' => 'Все'])]
     case all = 'Все';
 

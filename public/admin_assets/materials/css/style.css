@@ -1,0 +1,107 @@
+.button-name-office {
+    width: 150px;
+    margin: 15px;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.color-1 {
+    background: #c6f7c8 !important;
+}
+
+.color-2 {
+    background: #fce3fc !important;
+}
+
+.color-novokuz {
+    background: #a7f2af !important;
+}
+
+.color-arbat {
+    background: #8c90ff !important;
+}
+
+.color-barikad {
+    background: #ba6af7 !important;
+}
+
+.but-pagination {
+    font-size: 30px;
+}
+
+body:not(.ea-content-width-full) .content-wrapper {
+    max-width: 100%;
+}
+
+.order {
+    height: 50px;
+    width: 110px;
+    border-radius: 20px;
+    background: #fbfc9d;
+    text-align: center;
+    line-height: 50px;
+    font-weight: bold;
+    cursor: pointer;
+    position: relative;
+}
+
+.create-manager {
+    background: #facb84;
+}
+
+.create-finished {
+    background: #8ff79a;
+}
+
+/* 5 - красный */
+.ribbon-5 {
+    position: absolute;
+    top: 0px;
+    filter: drop-shadow(2px 3px 2px rgba(0, 0, 0, 0.5));
+}
+
+.ribbon-5 span {
+    display: block;
+    color: #fff;
+    font-size: 16px;
+    text-align: center;
+    background: #ee4433;
+    width: 15px;
+    line-height: 28px;
+    clip-path: polygon(0 0, 100% 0, 100% 80%, 40% 100%, 0 90%);
+}
+
+.create-order-button {
+
+}
+
+.hidden {
+    display: none;
+}
+
+.block-materials {
+    border-radius: 25px;
+}
+
+.name-block {
+    font-size: 25px;
+    border-bottom: 2px solid black;
+    border-radius: 25px;
+}
+
+.list-block {
+    height: 400px;
+    overflow-y: auto;
+}
+.material-block{
+    width: 90%;
+    background: #fbfc9d;
+    border-radius: 25px;
+    cursor: pointer;
+    position: relative;
+    text-indent: 20px;
+}
+.show-order{
+    cursor: pointer;
+    position: relative;
+}
