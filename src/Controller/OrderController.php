@@ -6,12 +6,8 @@ use App\Controller\Admin\DashboardController;
 use App\Dto\Order\OrderDto;
 use App\Dto\RequestGetCollectionDto;
 use App\Dto\StatusDay\StatusDayDto;
-use App\Entity\DaysOnWeek;
 use App\Entity\User;
-use App\Repository\DaysOnWeekRepository;
 use App\Service\OrderService;
-use DateInterval;
-use DateTime;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Option\EA;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\AdminContextFactory;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -72,7 +68,7 @@ class OrderController extends AbstractController
     ): Response
     {
 
-        if(empty($this->getUser())){
+        if (empty($this->getUser())) {
             return $this->redirect('/login');
         }
 
@@ -99,11 +95,13 @@ class OrderController extends AbstractController
             'user' => $this->getUser(),
         ]);
     }
+
     #[Route('/order/get-collection', name: 'order_get_collection', methods: ['GET'])]
     public function getCollection(#[CurrentUser] ?User $user, #[MapQueryString] ?RequestGetCollectionDto $dto): Json
     {
         return $this->json(['result' => $this->service->getCollection($user, $dto ?? new RequestGetCollectionDto())]);
     }
+
     #[Route('/order/get', name: 'order_get', methods: ['GET'])]
     public function get(#[CurrentUser] ?User $user, #[MapQueryString] OrderDto $dto): Json
     {
@@ -138,5 +136,11 @@ class OrderController extends AbstractController
     public function updateStatusDay(#[CurrentUser] ?User $user, #[MapRequestPayload] StatusDayDto $dto): Json
     {
         return $this->json(['result' => $this->service->updateStatusDay($user, $dto)]);
+    }
+
+    #[Route('/order/check-status-day', name: 'order_check_status_day', methods: ['POST'])]
+    public function checkStatusDay(#[CurrentUser] ?User $user, #[MapRequestPayload] StatusDayDto $dto): Json
+    {
+        return $this->json(['result' => $this->service->checkStatusDay($user, $dto)]);
     }
 }

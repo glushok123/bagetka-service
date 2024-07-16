@@ -1,5 +1,6 @@
 var weekNumberMain = null;
 var dayWeek = null;
+var statusDayOnCreated = null;
 
 function getCollectionOrder(officeType = null, page = null) {
     $.ajax({
@@ -147,18 +148,44 @@ function validOrder() {
     return true;
 }
 
+function checkStatusDay(officeType, date){
+    $.ajax({
+        url: '/order/check-status-day',
+        method: 'post',
+        data: {
+            'officeType': officeType,
+            'day': date,
+        },
+        async: false,
+        success: function (data) {
+            statusDayOnCreated = data.result.status
+        },
+    });
+}
 function saveOrder() {
     if (validOrder() === false) {
         return false;
     }
+
     let formData = new FormData($('#data-order')[0])
 
     if ($('input[name=orderId]').val() === '0') {
         url = '/order/create';
+
+        checkStatusDay($('select[name=officeType]').val(), $('input[name=date]').val())
+        if(statusDayOnCreated === true){
+            Toastify({
+                text: "День закрыт.",
+                close: true,
+                className: "error",
+                backgroundColor: "#f00"
+            }).showToast();
+            return false;
+        }
     } else {
         url = '/order/update';
     }
-    console.log(url)
+
     $.ajax({
         url: url,
         method: 'post',

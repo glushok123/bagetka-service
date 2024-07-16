@@ -5,7 +5,6 @@ namespace App\Service;
 use App\Dto\Order\OrderDto;
 use App\Dto\RequestGetCollectionDto;
 use App\Dto\StatusDay\StatusDayDto;
-use App\Entity\Appeal\AppealMessageFile;
 use App\Entity\DaysOnWeek;
 use App\Entity\Order;
 use App\Entity\User;
@@ -67,28 +66,6 @@ class OrderService
         return $data;
     }
 
-    public function get(User $user, OrderDto $dto): array
-    {
-        $order = $this->orderRepository->findOneBy(['id' => $dto->id]);
-        $orderData = [
-                'id' => $order->getId(),
-                'number' => $order->getNumber(),
-                'phone' => $order->getPhone(),
-                'isSendSms' => $order->isSendSms(),
-                'isFinished' => $order->isFinished(),
-                'isCreateManager' => $order->isCreateManager(),
-                'pdf' => $order->getPdf(),
-                'comment' => $order->getComment(),
-                'officeType' => $order->getOfficeType()->value,
-                'createdAt' => $order->getCreatedAt()->format('d.m.Y'),
-                'isImportant' => $order->isImportant(),
-                'isDeleted' => $order->isDeleted(),
-            ];
-
-
-        return $orderData;
-    }
-
     public function getCollectionWeek(User $user, RequestGetCollectionDto $dto): array
     {
         //$this->weeks_in_period('01.01.2024', '01.01.2035');
@@ -99,7 +76,7 @@ class OrderService
         if ($currentDay = $this->daysOnWeekRepository->findOneBy(['dateDay' => new DateTime()])) {
             $week = $this->daysOnWeekRepository->findBy(['weekNumber' => $currentDay->getWeekNumber()]);
 
-            if(!empty($dto->weekNumber)){
+            if (!empty($dto->weekNumber)) {
                 $week = $this->daysOnWeekRepository->findBy(['weekNumber' => $dto->weekNumber]);
             }
             $count = 1;
@@ -142,7 +119,7 @@ class OrderService
         $order->setCreatedAt($dto->date);
         $order->setIsImportant($dto->isImportant);
 
-        if ($user->getRole()->value === 'Менеджер'){
+        if ($user->getRole()->value === 'Менеджер') {
             $order->setIsCreateManager(true);
         }
 
@@ -154,6 +131,28 @@ class OrderService
         $this->orderRepository->save($order);
 
         return ['success' => true];
+    }
+
+    public function get(User $user, OrderDto $dto): array
+    {
+        $order = $this->orderRepository->findOneBy(['id' => $dto->id]);
+        $orderData = [
+            'id' => $order->getId(),
+            'number' => $order->getNumber(),
+            'phone' => $order->getPhone(),
+            'isSendSms' => $order->isSendSms(),
+            'isFinished' => $order->isFinished(),
+            'isCreateManager' => $order->isCreateManager(),
+            'pdf' => $order->getPdf(),
+            'comment' => $order->getComment(),
+            'officeType' => $order->getOfficeType()->value,
+            'createdAt' => $order->getCreatedAt()->format('d.m.Y'),
+            'isImportant' => $order->isImportant(),
+            'isDeleted' => $order->isDeleted(),
+        ];
+
+
+        return $orderData;
     }
 
     public function updateOrder($user, OrderDto $dto, ?FileBag $files = null): array
@@ -188,7 +187,7 @@ class OrderService
 
     public function updateStatusDay($user, StatusDayDto $dto): array
     {
-       // dd($dto);
+        // dd($dto);
         $day = $this->daysOnWeekRepository->findOneBy(['dateDay' => $dto->day]);
         switch ($dto->officeType) {
             case 'Новокузнецкая':
@@ -202,10 +201,34 @@ class OrderService
                 $day->setIsCloseBarricad($dto->typeDay === "false" ? false : true);
                 break;
         }
-       // dd($dto->typeDay, $day);
+        // dd($dto->typeDay, $day);
         $this->daysOnWeekRepository->save($day);
 
         return ['success' => true];
+    }
+
+    public function checkStatusDay($user, StatusDayDto $dto): array
+    {
+        $status = null;
+        $day = $this->daysOnWeekRepository->findOneBy(['dateDay' => $dto->day]);
+        switch ($dto->officeType) {
+            case 'Новокузнецкая':
+                //dd($dto->typeDay ==)
+                $status = $day->isCloseNov();
+                break;
+            case 'Арбатская':
+                $status = $day->isCloseArbat();
+                break;
+            case 'Баррикадная':
+                $status = $day->isCloseBarricad();
+                break;
+        }
+
+        if ($status === null) {
+            $status = false;
+        }
+
+        return ['status' => $status];
     }
 
     public function weeks_in_period($dateStart, $dateEnd)
