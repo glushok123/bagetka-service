@@ -71,7 +71,7 @@ class MaterialsController extends AbstractController
         return $this->json(['result' => $this->service->update($user, $dto)]);
     }
     #[Route('/materials/remove', name: 'materials_remove', methods: ['POST'])]
-    public function removeOrder(#[CurrentUser] ?User $user, #[MapRequestPayload] OrderDto $dto): Json
+    public function removeOrder(#[CurrentUser] ?User $user, #[MapRequestPayload] MaterialsDto $dto): Json
     {
         return $this->json(['result' => $this->service->remove($user, $dto)]);
     }

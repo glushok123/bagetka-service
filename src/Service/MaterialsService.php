@@ -97,7 +97,7 @@ class MaterialsService
 
     public function remove($user, MaterialsDto $dto): array
     {
-        $order = $this->repository->findOneBy(['id' => $dto->id]);
+        $order = $this->repository->findOneBy(['id' => $dto->materialId]);
         $this->repository->remove($order);
 
         return ['success' => true];

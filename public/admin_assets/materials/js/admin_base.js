@@ -144,10 +144,10 @@ function saveOrder() {
 function deleteOrder() {
     if (confirm('Вы уверены что хотите удалить задачу?') === true) {
         $.ajax({
-            url: '/order/remove',
+            url: '/materials/remove',
             method: 'post',
             data: {
-                'orderId': $('input[name=orderId]').val(),
+                'materialId': $('input[name=materialId]').val(),
             },
             async: false,
             success: function (data) {

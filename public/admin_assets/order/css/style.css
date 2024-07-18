@@ -64,3 +64,6 @@ body:not(.ea-content-width-full) .content-wrapper {
 .hidden{
     display: none;
 }
+td, th{
+    max-width: 150px !important;
+}

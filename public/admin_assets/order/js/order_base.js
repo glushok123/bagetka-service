@@ -194,7 +194,38 @@ function saveOrder() {
         processData: false,
         data: formData,
         success: function (data) {
-            location.reload()
+            let tableNov = $('#table-novokuz');
+            let tableAr = $('#table-arbat');
+            let tableBar = $('#table-barricad');
+
+            $('#block-spinner').show();
+
+            clearTable(tableNov)
+            clearTable(tableAr)
+            clearTable(tableBar)
+
+            getCollectionWeek(weekNumberMain);
+
+            setDateTable(tableNov, 'Новокузнецкая');
+            setDateTable(tableAr, 'Арбатская');
+            setDateTable(tableBar, 'Баррикадная');
+
+            getCollectionOrder('Новокузнецкая');
+            getCollectionOrder('Арбатская');
+            getCollectionOrder('Баррикадная');
+
+            addButtonCreateOrder(tableNov, 'Новокузнецкая');
+            addButtonCreateOrder(tableAr, 'Арбатская');
+            addButtonCreateOrder(tableBar, 'Баррикадная');
+
+            $('#block-spinner').hide();
+
+            Toastify({
+                text: "Заказ добавлен",
+                close: true,
+                className: "success",
+                backgroundColor: "#11ff00"
+            }).showToast();
         },
         error: function (jqXHR, exception) {
             if (jqXHR.status === 0) {
