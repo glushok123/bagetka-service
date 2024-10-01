@@ -39,6 +39,10 @@ body:not(.ea-content-width-full) .content-wrapper {
 .create-manager{
     background: #facb84;
 }
+.isExpired{
+    background: #ff0000;
+    color: white;
+}
 .create-finished{
     background: #8ff79a;
 }

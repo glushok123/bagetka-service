@@ -40,6 +40,9 @@ function getCollectionOrder(officeType = null, page = null) {
                         if (order.isImportant === true) {
                             blockImpotent = "<div class='ribbon-5'><span>*</span></div>"
                         }
+                        if (order.isExpired === true) {
+                            classOrder = 'isExpired'
+                        }
 
                         let orderHtml = "" +
                             "<div class='show-order order " + classOrder + "' " +
@@ -408,6 +411,14 @@ function setDateTable(table, officeType) {
     table.find('.sa').text(dayWeek[5].sa.date)
     table.find('.su').text(dayWeek[6].su.date)
 
+    table.find('.mo-2').text(dayWeek[7].mo.date)
+    table.find('.tu-2').text(dayWeek[8].tu.date)
+    table.find('.we-2').text(dayWeek[9].we.date)
+    table.find('.th-2').text(dayWeek[10].th.date)
+    table.find('.fr-2').text(dayWeek[11].fr.date)
+    table.find('.sa-2').text(dayWeek[12].sa.date)
+    table.find('.su-2').text(dayWeek[13].su.date)
+
 
     if (officeType === 'Новокузнецкая') {
         var butMo = dayWeek[0].mo.statusNov === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[0].mo.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[0].mo.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
@@ -417,6 +428,14 @@ function setDateTable(table, officeType) {
         var butFr = dayWeek[4].fr.statusNov === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[4].fr.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[4].fr.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
         var butSa = dayWeek[5].sa.statusNov === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[5].sa.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[5].sa.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
         var butSu = dayWeek[6].su.statusNov === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[6].su.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[6].su.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+
+        var butMo2 = dayWeek[7].mo.statusNov === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[7].mo.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[7].mo.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butTu2 = dayWeek[8].tu.statusNov === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[8].tu.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[8].tu.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butWe2 = dayWeek[9].we.statusNov === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[9].we.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[9].we.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butTh2 = dayWeek[10].th.statusNov === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[10].th.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[10].th.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butFr2 = dayWeek[11].fr.statusNov === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[11].fr.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[11].fr.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butSa2 = dayWeek[12].sa.statusNov === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[12].sa.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[12].sa.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butSu2 = dayWeek[13].su.statusNov === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[13].su.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[13].su.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
     }
     if (officeType === 'Арбатская') {
         var butMo = dayWeek[0].mo.statusArbat === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[0].mo.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[0].mo.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
@@ -426,7 +445,16 @@ function setDateTable(table, officeType) {
         var butFr = dayWeek[4].fr.statusArbat === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[4].fr.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[4].fr.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
         var butSa = dayWeek[5].sa.statusArbat === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[5].sa.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[5].sa.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
         var butSu = dayWeek[6].su.statusArbat === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[6].mo.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[6].su.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+
+        var butMo2 = dayWeek[7].mo.statusArbat === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[7].mo.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[7].mo.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butTu2 = dayWeek[8].tu.statusArbat === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[8].tu.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[8].tu.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butWe2 = dayWeek[9].we.statusArbat === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[9].we.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[9].we.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butTh2 = dayWeek[10].th.statusArbat === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[10].th.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[10].th.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butFr2 = dayWeek[11].fr.statusArbat === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[11].fr.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[11].fr.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butSa2 = dayWeek[12].sa.statusArbat === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[12].sa.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[12].sa.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butSu2 = dayWeek[13].su.statusArbat === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[13].su.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[13].su.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
     }
+
     if (officeType === 'Баррикадная') {
         var butMo = dayWeek[0].mo.statusBar === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[0].mo.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[0].mo.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
         var butTu = dayWeek[1].tu.statusBar === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[1].tu.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[1].tu.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
@@ -435,6 +463,14 @@ function setDateTable(table, officeType) {
         var butFr = dayWeek[4].fr.statusBar === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[4].fr.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[4].fr.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
         var butSa = dayWeek[5].sa.statusBar === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[5].sa.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[5].sa.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
         var butSu = dayWeek[6].su.statusBar === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[6].su.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[6].su.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+
+        var butMo2 = dayWeek[7].mo.statusBar === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[7].mo.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[7].mo.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butTu2 = dayWeek[8].tu.statusBar === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[8].tu.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[8].tu.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butWe2 = dayWeek[9].we.statusBar === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[9].we.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[9].we.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butTh2 = dayWeek[10].th.statusBar === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[10].th.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[10].th.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butFr2 = dayWeek[11].fr.statusBar === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[11].fr.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[11].fr.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butSa2 = dayWeek[12].sa.statusBar === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[12].sa.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[12].sa.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
+        var butSu2 = dayWeek[13].su.statusBar === true ? "<button data-type='close' data-office-type='" + officeType + "' data-date='" + dayWeek[13].su.date + "' type='button' class='but-update-status-day btn btn-info'>Закрыт</button>" : "<button data-type='open' data-office-type='" + officeType + "' data-date='" + dayWeek[13].su.date + "' type='button' class='but-update-status-day btn btn-success'>Открыт</button>";
     }
 
     table.find('.status-mo').html(butMo)
@@ -444,6 +480,14 @@ function setDateTable(table, officeType) {
     table.find('.status-fr').html(butFr)
     table.find('.status-sa').html(butSa)
     table.find('.status-su').html(butSu)
+
+    table.find('.status-mo-2').html(butMo2)
+    table.find('.status-tu-2').html(butTu2)
+    table.find('.status-we-2').html(butWe2)
+    table.find('.status-th-2').html(butTh2)
+    table.find('.status-fr-2').html(butFr2)
+    table.find('.status-sa-2').html(butSa2)
+    table.find('.status-su-2').html(butSu2)
 }
 
 $(document).on('click', '.create-order-button', function () {

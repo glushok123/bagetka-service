@@ -32,8 +32,9 @@ class OrderService
         $data = [];
 
         $week = $this->daysOnWeekRepository->findBy(['weekNumber' => $dto->weekNumber]);
+        $weekEnd = $this->daysOnWeekRepository->findBy(['weekNumber' => $dto->weekNumber + 1]);
         $dateStart = $week[0]->getDateDay();
-        $dateEnd = $week[6]->getDateDay();
+        $dateEnd = $weekEnd[6]->getDateDay();
 
 
         switch ($user->getRole()->value) {
@@ -60,6 +61,7 @@ class OrderService
                 'createdAt' => $order->getCreatedAt()->format('d.m.Y'),
                 'isImportant' => $order->isImportant(),
                 'isDeleted' => $order->isDeleted(),
+                'isExpired' => $order->getCreatedAt() <= new \DateTime(),
             ];
         }
 
@@ -70,14 +72,40 @@ class OrderService
     {
         //$this->weeks_in_period('01.01.2024', '01.01.2035');
         $data = [];
-        $day = new DateTime();
-        $day = $day->format('Y-m-d');
+        // $day = new DateTime();
+        // $day = $day->format('Y-m-d');
 
         if ($currentDay = $this->daysOnWeekRepository->findOneBy(['dateDay' => new DateTime()])) {
             $week = $this->daysOnWeekRepository->findBy(['weekNumber' => $currentDay->getWeekNumber()]);
 
             if (!empty($dto->weekNumber)) {
                 $week = $this->daysOnWeekRepository->findBy(['weekNumber' => $dto->weekNumber]);
+            }
+            $count = 1;
+            foreach ($week as $day) {
+                if ($count === 1) $dayName = 'mo';
+                if ($count === 2) $dayName = 'tu';
+                if ($count === 3) $dayName = 'we';
+                if ($count === 4) $dayName = 'th';
+                if ($count === 5) $dayName = 'fr';
+                if ($count === 6) $dayName = 'sa';
+                if ($count === 7) $dayName = 'su';
+
+                $data[] = [
+                    $dayName => [
+                        'id' => $day->getId(),
+                        'date' => $day->getDateDay()->format('d.m.Y'),
+                        'statusArbat' => $day->isCloseArbat(),
+                        'statusNov' => $day->isCloseNov(),
+                        'statusBar' => $day->isCloseBarricad(),
+                    ],
+                ];
+                $count = $count + 1;
+            }
+            $week = $this->daysOnWeekRepository->findBy(['weekNumber' => $currentDay->getWeekNumber() + 1]);
+
+            if (!empty($dto->weekNumber)) {
+                $week = $this->daysOnWeekRepository->findBy(['weekNumber' => $dto->weekNumber + 1]);
             }
             $count = 1;
             foreach ($week as $day) {
