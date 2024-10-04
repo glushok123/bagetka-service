@@ -40,7 +40,7 @@ function getCollectionOrder(officeType = null, page = null) {
                         if (order.isImportant === true) {
                             blockImpotent = "<div class='ribbon-5'><span>*</span></div>"
                         }
-                        if (order.isExpired === true) {
+                        if (order.isExpired === true && order.isFinished === false) {
                             classOrder = 'isExpired'
                         }
 
