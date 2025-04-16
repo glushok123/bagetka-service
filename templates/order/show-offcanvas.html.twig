@@ -43,11 +43,28 @@
                 <input type="checkbox" class="form-check-input" name="isFinished">
                 <label class="form-check-label" for="exampleCheck1">Заказ готов</label>
             </div>
+            <div class="mb-3">
+                <label class="form-label">Комментарий</label>
+                <textarea class="form-control" name="comment" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Бланк заказа (JPEG)</label>
+                <input type="file" class="form-control" name="jpeg" accept="image/jpeg,image/jpg">
+            </div>
+
             <hr>
             <button class="btn btn-primary" id="button-save-order">Сохранить</button>
             <button class="btn btn-danger" id="button-save-delete">Удалить</button>
             <br><br>
+            <a target="_blank" class="btn btn-info" href="/upload/files/xxx.jpeg" id="button-open-jpeg" >Открыть JPEG</a>
+
             <a target="_blank" class="btn btn-danger" href="/upload/files/c96e15f45e076628adcd8d13dfc80dd7.pdf" id="button-open-pdf">Открыть Pdf</a>
+
+            <div class="mt-3" id="jpeg-thumbnail-wrapper" style="display: none;">
+                <label class="form-label">Миниатюра JPEG:</label><br>
+                <img id="jpeg-thumbnail" src="" alt="Миниатюра JPEG" style="max-width: 100%; max-height: 300px; border: 1px solid #ccc; padding: 5px;">
+            </div>
         </form>
     </div>
 </div>

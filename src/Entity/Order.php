@@ -52,6 +52,21 @@ class Order
     #[ORM\Column(nullable: true)]
     private ?bool $isFinished = false;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $jpeg = null;
+
+    public function getJpeg(): ?string
+    {
+        return $this->jpeg;
+    }
+
+    public function setJpeg(?string $jpeg): static
+    {
+        $this->jpeg = $jpeg;
+        return $this;
+    }
+
+
     public function getOfficeType(): ?OfficeType
     {
         return $this->officeType;

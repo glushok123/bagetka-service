@@ -300,6 +300,19 @@ function showOrder(orderId) {
                 $('#button-open-pdf').removeClass('hidden');
                 $('#button-open-pdf').prop('href', '/upload/files/' + data.result.pdf)
             }
+
+            if (data.result.jpeg === null) {
+                $('#button-open-jpeg').addClass('hidden');
+                $('#jpeg-thumbnail-wrapper').hide();
+            } else {
+                const jpegUrl = '/upload/files/' + data.result.jpeg;
+
+                $('#button-open-jpeg').removeClass('hidden');
+                $('#button-open-jpeg').prop('href', jpegUrl);
+
+                $('#jpeg-thumbnail').prop('src', jpegUrl);
+                $('#jpeg-thumbnail-wrapper').show();
+            }
         },
         error: function (jqXHR, exception) {
             Toastify({
@@ -333,6 +346,8 @@ function clearFormOrder(officeType, date) {
     //$("select[name=officeType] option[value=" + data.result.officeType + "]").prop('selected', true);
     //$("select[name=officeType] option[value=Баррикадная]").prop('selected', false);
     $("select[name=officeType]").val(officeType);
+    $('#jpeg-thumbnail-wrapper').hide();
+    $('#jpeg-thumbnail').prop('src', '');
 }
 
 function deleteOrder() {

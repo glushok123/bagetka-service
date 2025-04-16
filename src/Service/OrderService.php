@@ -14,6 +14,7 @@ use App\Repository\OrderRepository;
 use DateInterval;
 use DateTime;
 use Symfony\Component\HttpFoundation\FileBag;
+use Symfony\Component\HttpFoundation\Request;
 
 class OrderService
 {
@@ -56,6 +57,7 @@ class OrderService
                 'isFinished' => $order->isFinished(),
                 'isCreateManager' => $order->isCreateManager(),
                 'pdf' => $order->getPdf(),
+                'jpeg' => $order->getJpeg(),
                 'comment' => $order->getComment(),
                 'officeType' => $order->getOfficeType()->value,
                 'createdAt' => $order->getCreatedAt()->format('d.m.Y'),
@@ -156,6 +158,13 @@ class OrderService
             $order->setPdf($filename);
         }
 
+        if ($files->get('jpeg')) {
+            $filename = $this->fileService->save($files->get('jpeg'));
+            $order->setJpeg($filename);
+        }
+
+        $order->setComment($dto->comment);
+
         $this->orderRepository->save($order);
 
         return ['success' => true];
@@ -172,6 +181,7 @@ class OrderService
             'isFinished' => $order->isFinished(),
             'isCreateManager' => $order->isCreateManager(),
             'pdf' => $order->getPdf(),
+            'jpeg' => $order->getJpeg(),
             'comment' => $order->getComment(),
             'officeType' => $order->getOfficeType()->value,
             'createdAt' => $order->getCreatedAt()->format('d.m.Y'),
@@ -199,6 +209,13 @@ class OrderService
             $filename = $this->fileService->save($files->get('pdf'));
             $order->setPdf($filename);
         }
+
+        if ($files->get('jpeg')) {
+            $filename = $this->fileService->save($files->get('jpeg'));
+            $order->setJpeg($filename);
+        }
+
+        $order->setComment($dto->comment);
 
         $this->orderRepository->save($order);
 

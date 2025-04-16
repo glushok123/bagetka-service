@@ -14,6 +14,7 @@ class OrderDto extends BasicDto
         public readonly ?string            $phone = null,
         public readonly ?bool              $isSendSms = null,
         public readonly ?string            $pdf = null,
+        public readonly ?string            $jpeg = null,
         public readonly ?string            $comment = null,
         public readonly ?bool              $isImportant = null,
         public readonly ?bool              $isDeleted = null,
