@@ -262,7 +262,7 @@ function showOrder(orderId) {
             $('input[name=number]').val(data.result.number)
             $('input[name=phone]').val(data.result.phone)
             $('input[name=orderId]').val(data.result.id)
-
+            $('textarea[name=comment]').val(data.result.comment ?? '');
             var euro_date = data.result.createdAt;
             euro_date = euro_date.split('.');
             var us_date = euro_date.reverse().join('-');
