@@ -187,6 +187,10 @@ class OrderService
     public function get(User $user, OrderDto $dto): array
     {
         $order = $this->orderRepository->findOneBy(['id' => $dto->id]);
+        if ($this->isReceiptLocked($order) && $order->isFinished() !== true) {
+            $order->setIsFinished(true);
+            $this->orderRepository->save($order);
+        }
         $employees = $this->getEmployeesByOfficeType($order->getOfficeType());
         $orderData = [
             'id' => $order->getId(),
@@ -201,12 +205,14 @@ class OrderService
             'receiptEmployeeId' => $order->getReceiptEmployee()?->getId(),
             'receiptEmployeeName' => $order->getReceiptEmployee()?->getFullName(),
             'receiptAmount' => $order->getReceiptAmount(),
+            'receiptCreatedAt' => $order->getReceiptCreatedAt()?->format('c'),
             'durationHours' => $order->getDurationHours(),
             'comment' => $order->getComment(),
             'officeType' => $order->getOfficeType()->value,
             'createdAt' => $order->getCreatedAt()->format('d.m.Y'),
             'isImportant' => $order->isImportant(),
             'isDeleted' => $order->isDeleted(),
+            'isLocked' => $this->isReceiptLocked($order),
             'employees' => $employees,
         ];
 
@@ -217,6 +223,9 @@ class OrderService
     public function updateOrder($user, OrderDto $dto, ?FileBag $files = null): array
     {
         $order = $this->orderRepository->findOneBy(['id' => $dto->orderId]);
+        if ($this->isReceiptLocked($order)) {
+            return ['error' => 'Заказ закрыт для изменений'];
+        }
         $durationHours = $this->normalizeDurationHours($dto->durationHours);
         $officeType = OfficeType::from($dto->officeType);
         $validationError = $this->validateDailyCapacity($dto->date, $officeType, $durationHours, $order->getId());
@@ -262,6 +271,9 @@ class OrderService
         if ($dto->employeeId === null || $dto->amount === null || $dto->amount === '') {
             return ['error' => 'Заполните сотрудника и сумму'];
         }
+        if ($this->isReceiptLocked($order)) {
+            return ['error' => 'Чек нельзя изменить'];
+        }
         if (!is_numeric($dto->amount) || (float) $dto->amount <= 0) {
             return ['error' => 'Сумма должна быть больше нуля'];
         }
@@ -277,6 +289,7 @@ class OrderService
         $order->setReceiptPdf($filename);
         $order->setReceiptEmployee($employee);
         $order->setReceiptAmount($dto->amount);
+        $order->setReceiptCreatedAt(new \DateTimeImmutable());
         $this->orderRepository->save($order);
 
         return ['receiptPdf' => $filename];
@@ -372,6 +385,16 @@ class OrderService
             ],
             $this->employeeRepository->findBy(['officeType' => $officeType], ['fullName' => 'ASC'])
         );
+    }
+
+    private function isReceiptLocked(Order $order): bool
+    {
+        $receiptCreatedAt = $order->getReceiptCreatedAt();
+        if ($order->getReceiptPdf() === null || $receiptCreatedAt === null) {
+            return false;
+        }
+
+        return $receiptCreatedAt <= (new \DateTimeImmutable('-1 hour'));
     }
 
     private function resolveFinishedState(Order $order, ?bool $isFinished): bool

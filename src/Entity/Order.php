@@ -68,6 +68,9 @@ class Order
     #[ORM\Column(name: 'receipt_amount', length: 255, nullable: true)]
     private ?string $receiptAmount = null;
 
+    #[ORM\Column(name: 'receipt_created_at', nullable: true)]
+    private ?\DateTimeImmutable $receiptCreatedAt = null;
+
     public function getJpeg(): ?string
     {
         return $this->jpeg;
@@ -120,6 +123,17 @@ class Order
     public function setReceiptAmount(?string $receiptAmount): static
     {
         $this->receiptAmount = $receiptAmount;
+        return $this;
+    }
+
+    public function getReceiptCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->receiptCreatedAt;
+    }
+
+    public function setReceiptCreatedAt(?\DateTimeImmutable $receiptCreatedAt): static
+    {
+        $this->receiptCreatedAt = $receiptCreatedAt;
         return $this;
     }
 

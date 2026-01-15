@@ -5,6 +5,7 @@ var receiptEmployees = [];
 var currentReceiptPdf = null;
 var currentReceiptEmployeeId = null;
 var currentReceiptAmount = null;
+var currentReceiptLocked = false;
 
 function getDurationColumnSpan(durationHours) {
     var hours = parseInt(durationHours, 10);
@@ -46,16 +47,22 @@ function updateReceiptState(receiptPdf) {
 }
 
 function setReceiptFormState(receiptPdf, employeeId, amount) {
-    var disabled = Boolean(receiptPdf);
-    $('#receipt-employee').prop('disabled', disabled);
-    $('#receipt-amount').prop('disabled', disabled);
-    $('#button-save-receipt').prop('disabled', disabled);
-
     currentReceiptEmployeeId = employeeId || null;
     currentReceiptAmount = amount || null;
-    $('#receipt-employee').val(employeeId || '');
-    $('#receipt-amount').val(amount || '');
+    var employeeName = '';
+    if (currentReceiptEmployeeId) {
+        var selected = $('#receipt-employee option[value="' + currentReceiptEmployeeId + '"]');
+        if (selected.length > 0) {
+            employeeName = selected.text();
+        }
+    }
+    $('#receipt-employee-name').val(employeeName);
+    $('#receipt-amount-view').val(amount || '');
 }
+
+$(document).on('change', '#receipt-employee', function () {
+    setReceiptFormState(currentReceiptPdf, $(this).val(), currentReceiptAmount);
+});
 
 function renderReceiptEmployees(employees, selectedId) {
     receiptEmployees = employees || [];
@@ -71,6 +78,9 @@ function renderReceiptEmployees(employees, selectedId) {
         }
         select.append(option);
     });
+    if (selectedId) {
+        setReceiptFormState(currentReceiptPdf, selectedId, currentReceiptAmount);
+    }
 }
 
 function toggleReceiptOverlay(show) {
@@ -78,6 +88,18 @@ function toggleReceiptOverlay(show) {
         $('#receipt-overlay').removeClass('hidden');
     } else {
         $('#receipt-overlay').addClass('hidden');
+    }
+}
+
+function setOrderFormLocked(isLocked) {
+    currentReceiptLocked = Boolean(isLocked);
+    $('#data-order')
+        .find('input, select, textarea, button')
+        .not('[data-bs-dismiss]')
+        .not('#button-open-pdf, #button-open-jpeg, #button-open-receipt')
+        .prop('disabled', currentReceiptLocked);
+    if (!currentReceiptLocked) {
+        $('#button-create-receipt').prop('disabled', false);
     }
 }
 
@@ -417,6 +439,7 @@ function showOrder(orderId) {
             $('#receipt-amount').val(data.result.receiptAmount || '');
             updateReceiptState(data.result.receiptPdf);
             setReceiptFormState(data.result.receiptPdf, data.result.receiptEmployeeId, data.result.receiptAmount);
+            setOrderFormLocked(data.result.isLocked);
 
             if(data.result.pdf === null){
                 $('#button-open-pdf').addClass('hidden');
@@ -460,6 +483,7 @@ function clearFormOrder(officeType, date) {
     updateReceiptState(null);
     renderReceiptEmployees([], null);
     setReceiptFormState(null, null, null);
+    setOrderFormLocked(false);
 
     var euro_date = date;
     euro_date = euro_date.split('.');
@@ -666,11 +690,23 @@ $(document).on('click', '#button-create-receipt', function () {
         return;
     }
 
-    if (!currentReceiptPdf) {
+    if (currentReceiptLocked) {
+        Toastify({
+            text: "Заказ закрыт для изменений",
+            close: true,
+            className: "error",
+            backgroundColor: "#f00"
+        }).showToast();
+        return;
+    }
+
+    if (currentReceiptPdf) {
+        $('#receipt-employee').val(currentReceiptEmployeeId || '');
+        $('#receipt-amount').val(currentReceiptAmount || '');
+    } else {
         $('#receipt-employee').val('');
         $('#receipt-amount').val('');
     }
-    setReceiptFormState(currentReceiptPdf, currentReceiptEmployeeId, currentReceiptAmount);
     showReceiptModal();
 });
 $(document).on('submit', '#receipt-form', function (event) {

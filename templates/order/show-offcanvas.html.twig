@@ -69,6 +69,14 @@
                 <button type="button" class="btn btn-success" id="button-create-receipt">Выписать чек</button>
                 <a target="_blank" class="btn btn-outline-success hidden" href="/upload/files/receipt.pdf" id="button-open-receipt">Скачать чек</a>
             </div>
+            <div class="mb-3">
+                <label class="form-label" for="receipt-employee-name">Сотрудник (чек)</label>
+                <input type="text" class="form-control" id="receipt-employee-name" name="receiptEmployeeName" disabled>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="receipt-amount-view">Сумма (чек)</label>
+                <input type="text" class="form-control" id="receipt-amount-view" name="receiptAmountView" disabled>
+            </div>
 
             <hr>
             <button class="btn btn-primary" id="button-save-order">Сохранить</button>
