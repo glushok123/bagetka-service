@@ -55,6 +55,12 @@ class Order
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $jpeg = null;
 
+    #[ORM\Column(name: 'duration_hours', type: Types::INTEGER, options: ['default' => 2])]
+    private int $durationHours = 2;
+
+    #[ORM\Column(name: 'receipt_pdf', length: 255, nullable: true)]
+    private ?string $receiptPdf = null;
+
     public function getJpeg(): ?string
     {
         return $this->jpeg;
@@ -66,6 +72,27 @@ class Order
         return $this;
     }
 
+    public function getDurationHours(): int
+    {
+        return $this->durationHours;
+    }
+
+    public function setDurationHours(int $durationHours): static
+    {
+        $this->durationHours = $durationHours;
+        return $this;
+    }
+
+    public function getReceiptPdf(): ?string
+    {
+        return $this->receiptPdf;
+    }
+
+    public function setReceiptPdf(?string $receiptPdf): static
+    {
+        $this->receiptPdf = $receiptPdf;
+        return $this;
+    }
 
     public function getOfficeType(): ?OfficeType
     {

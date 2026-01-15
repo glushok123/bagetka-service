@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Dto\Order\OrderDto;
+use App\Dto\Order\ReceiptDto;
 use App\Dto\RequestGetCollectionDto;
 use App\Dto\StatusDay\StatusDayDto;
 use App\Entity\DaysOnWeek;
@@ -58,6 +59,8 @@ class OrderService
                 'isCreateManager' => $order->isCreateManager(),
                 'pdf' => $order->getPdf(),
                 'jpeg' => $order->getJpeg(),
+                'receiptPdf' => $order->getReceiptPdf(),
+                'durationHours' => $order->getDurationHours(),
                 'comment' => $order->getComment(),
                 'officeType' => $order->getOfficeType()->value,
                 'createdAt' => $order->getCreatedAt()->format('d.m.Y'),
@@ -144,10 +147,11 @@ class OrderService
         $order->setNumber($dto->number);
         $order->setPhone($dto->phone);
         $order->setIsDeleted(false);
-        $order->setIsFinished($dto->isFinished);
+        $order->setIsFinished($this->resolveFinishedState($order, $dto->isFinished));
         $order->setOfficeType(OfficeType::from($dto->officeType));
         $order->setCreatedAt($dto->date);
         $order->setIsImportant($dto->isImportant);
+        $order->setDurationHours($this->normalizeDurationHours($dto->durationHours));
 
         if ($user->getRole()->value === 'Менеджер') {
             $order->setIsCreateManager(true);
@@ -182,6 +186,8 @@ class OrderService
             'isCreateManager' => $order->isCreateManager(),
             'pdf' => $order->getPdf(),
             'jpeg' => $order->getJpeg(),
+            'receiptPdf' => $order->getReceiptPdf(),
+            'durationHours' => $order->getDurationHours(),
             'comment' => $order->getComment(),
             'officeType' => $order->getOfficeType()->value,
             'createdAt' => $order->getCreatedAt()->format('d.m.Y'),
@@ -199,10 +205,11 @@ class OrderService
         $order->setNumber($dto->number);
         $order->setPhone($dto->phone);
         $order->setIsDeleted(false);
-        $order->setIsFinished($dto->isFinished);
+        $order->setIsFinished($this->resolveFinishedState($order, $dto->isFinished));
         $order->setOfficeType(OfficeType::from($dto->officeType));
         $order->setCreatedAt($dto->date);
         $order->setIsImportant($dto->isImportant);
+        $order->setDurationHours($this->normalizeDurationHours($dto->durationHours));
 
 
         if (!empty($files->get('pdf'))) {
@@ -220,6 +227,23 @@ class OrderService
         $this->orderRepository->save($order);
 
         return ['success' => true];
+    }
+
+    public function createReceipt(ReceiptDto $dto): array
+    {
+        if ($dto->orderId === null) {
+            return ['error' => 'Order not found'];
+        }
+        $order = $this->orderRepository->findOneBy(['id' => $dto->orderId]);
+        if (!$order) {
+            return ['error' => 'Order not found'];
+        }
+
+        $filename = $this->generateReceiptPdf($order, $dto);
+        $order->setReceiptPdf($filename);
+        $this->orderRepository->save($order);
+
+        return ['receiptPdf' => $filename];
     }
 
     public function removeOrder($user, OrderDto $dto): array
@@ -274,6 +298,91 @@ class OrderService
         }
 
         return ['status' => $status];
+    }
+
+    private function normalizeDurationHours(?int $durationHours): int
+    {
+        $allowed = [2, 4, 6, 8, 10, 12];
+        if ($durationHours === null) {
+            return 2;
+        }
+        if (!in_array($durationHours, $allowed, true)) {
+            return 2;
+        }
+
+        return $durationHours;
+    }
+
+    private function resolveFinishedState(Order $order, ?bool $isFinished): bool
+    {
+        if ($order->getReceiptPdf() === null) {
+            return false;
+        }
+
+        return $isFinished ?? false;
+    }
+
+    private function generateReceiptPdf(Order $order, ReceiptDto $dto): string
+    {
+        $filename = sprintf('receipt_%s.pdf', md5(uniqid((string) $order->getId(), true)));
+        $filepath = FileService::PATH_FILE . $filename;
+
+        $lines = [
+            'Receipt for order #' . $order->getNumber(),
+            'Name: ' . ($dto->fullName ?? ''),
+            'Amount: ' . ($dto->amount ?? ''),
+        ];
+
+        $content = $this->buildSimplePdf($lines);
+        file_put_contents($filepath, $content);
+
+        return $filename;
+    }
+
+    private function buildSimplePdf(array $lines): string
+    {
+        $escapedLines = array_map([$this, 'escapePdfText'], $lines);
+        $textLines = [];
+        foreach ($escapedLines as $index => $line) {
+            if ($index === 0) {
+                $textLines[] = sprintf('50 750 Td (%s) Tj', $line);
+            } else {
+                $textLines[] = sprintf('0 -16 Td (%s) Tj', $line);
+            }
+        }
+
+        $stream = "BT\n/F1 12 Tf\n" . implode("\n", $textLines) . "\nET";
+
+        $objects = [
+            "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n",
+            "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n",
+            "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n",
+            "4 0 obj\n<< /Length " . strlen($stream) . " >>\nstream\n" . $stream . "\nendstream\nendobj\n",
+            "5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n",
+        ];
+
+        $pdf = "%PDF-1.4\n";
+        $offsets = [0];
+        foreach ($objects as $object) {
+            $offsets[] = strlen($pdf);
+            $pdf .= $object;
+        }
+
+        $xrefPosition = strlen($pdf);
+        $pdf .= "xref\n0 " . (count($objects) + 1) . "\n";
+        $pdf .= "0000000000 65535 f \n";
+        foreach (array_slice($offsets, 1) as $offset) {
+            $pdf .= sprintf("%010d 00000 n \n", $offset);
+        }
+        $pdf .= "trailer\n<< /Size " . (count($objects) + 1) . " /Root 1 0 R >>\n";
+        $pdf .= "startxref\n" . $xrefPosition . "\n%%EOF";
+
+        return $pdf;
+    }
+
+    private function escapePdfText(string $text): string
+    {
+        return str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $text);
     }
 
     public function weeks_in_period($dateStart, $dateEnd)

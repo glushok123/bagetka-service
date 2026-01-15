@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Controller\Admin\DashboardController;
 use App\Dto\Order\OrderDto;
+use App\Dto\Order\ReceiptDto;
 use App\Dto\RequestGetCollectionDto;
 use App\Dto\StatusDay\StatusDayDto;
 use App\Entity\User;
@@ -142,5 +143,11 @@ class OrderController extends AbstractController
     public function checkStatusDay(#[CurrentUser] ?User $user, #[MapRequestPayload] StatusDayDto $dto): Json
     {
         return $this->json(['result' => $this->service->checkStatusDay($user, $dto)]);
+    }
+
+    #[Route('/order/create-receipt', name: 'order_create_receipt', methods: ['POST'])]
+    public function createReceipt(#[MapRequestPayload] ReceiptDto $dto): Json
+    {
+        return $this->json(['result' => $this->service->createReceipt($dto)]);
     }
 }

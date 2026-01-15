@@ -30,6 +30,18 @@
                 <input type="date" class="form-control" name="date">
             </div>
 
+            <div class="mb-3">
+                <label class="form-label">Время выполнения (часы)</label>
+                <select class="form-select" name="durationHours">
+                    <option value="2">2 часа</option>
+                    <option value="4">4 часа</option>
+                    <option value="6">6 часов</option>
+                    <option value="8">8 часов</option>
+                    <option value="10">10 часов</option>
+                    <option value="12">12 часов</option>
+                </select>
+            </div>
+
             <div class="mb-3 {% if user.role.value == 'Мастер'%} hidden {% endif %}">
                 <label class="form-label">PDF</label>
                 <input type="file" class="form-control" name="pdf" accept="application/pdf">
@@ -40,8 +52,8 @@
                 <label class="form-check-label" for="exampleCheck1">Срочный заказ</label>
             </div>
             <div class="mb-3 form-check {% if user.role.value == 'Менеджер'%} hidden {% endif %}">
-                <input type="checkbox" class="form-check-input" name="isFinished">
-                <label class="form-check-label" for="exampleCheck1">Заказ готов</label>
+                <input type="checkbox" class="form-check-input" name="isFinished" id="order-finished">
+                <label class="form-check-label" for="order-finished">Заказ готов</label>
             </div>
             <div class="mb-3">
                 <label class="form-label">Комментарий</label>
@@ -51,6 +63,11 @@
             <div class="mb-3">
                 <label class="form-label">Бланк заказа (JPEG)</label>
                 <input type="file" class="form-control" name="jpeg" accept="image/jpeg,image/jpg">
+            </div>
+
+            <div class="mb-3">
+                <button type="button" class="btn btn-success" id="button-create-receipt">Выписать чек</button>
+                <a target="_blank" class="btn btn-outline-success hidden" href="/upload/files/receipt.pdf" id="button-open-receipt">Скачать чек</a>
             </div>
 
             <hr>
@@ -66,5 +83,32 @@
                 <img id="jpeg-thumbnail" src="" alt="Миниатюра JPEG" style="max-width: 100%; max-height: 300px; border: 1px solid #ccc; padding: 5px;">
             </div>
         </form>
+    </div>
+</div>
+
+<div class="modal fade" id="receiptModal" tabindex="-1" aria-labelledby="receiptModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="receiptModalLabel">Выписать чек</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <form id="receipt-form" action="javascript:void(0);">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="receipt-full-name">ФИО</label>
+                        <input type="text" class="form-control" id="receipt-full-name" name="fullName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="receipt-amount">Сумма</label>
+                        <input type="number" class="form-control" id="receipt-amount" name="amount" min="0" step="0.01" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary" id="button-save-receipt">Сформировать</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
