@@ -7,10 +7,12 @@ use App\Dto\Order\ReceiptDto;
 use App\Dto\RequestGetCollectionDto;
 use App\Dto\StatusDay\StatusDayDto;
 use App\Entity\DaysOnWeek;
+use App\Entity\Employee;
 use App\Entity\Order;
 use App\Entity\User;
 use App\Enum\OfficeType;
 use App\Repository\DaysOnWeekRepository;
+use App\Repository\EmployeeRepository;
 use App\Repository\OrderRepository;
 use DateInterval;
 use DateTime;
@@ -22,6 +24,7 @@ class OrderService
     public function __construct(
         private readonly DaysOnWeekRepository $daysOnWeekRepository,
         private readonly OrderRepository      $orderRepository,
+        private readonly EmployeeRepository   $employeeRepository,
         private readonly FileService          $fileService,
     )
     {
@@ -143,15 +146,22 @@ class OrderService
 
     public function createOrder($user, OrderDto $dto, ?FileBag $files = null): array
     {
+        $durationHours = $this->normalizeDurationHours($dto->durationHours);
+        $officeType = OfficeType::from($dto->officeType);
+        $validationError = $this->validateDailyCapacity($dto->date, $officeType, $durationHours);
+        if ($validationError !== null) {
+            return ['error' => $validationError];
+        }
+
         $order = new Order();
         $order->setNumber($dto->number);
         $order->setPhone($dto->phone);
         $order->setIsDeleted(false);
         $order->setIsFinished($this->resolveFinishedState($order, $dto->isFinished));
-        $order->setOfficeType(OfficeType::from($dto->officeType));
+        $order->setOfficeType($officeType);
         $order->setCreatedAt($dto->date);
         $order->setIsImportant($dto->isImportant);
-        $order->setDurationHours($this->normalizeDurationHours($dto->durationHours));
+        $order->setDurationHours($durationHours);
 
         if ($user->getRole()->value === 'Менеджер') {
             $order->setIsCreateManager(true);
@@ -177,6 +187,7 @@ class OrderService
     public function get(User $user, OrderDto $dto): array
     {
         $order = $this->orderRepository->findOneBy(['id' => $dto->id]);
+        $employees = $this->getEmployeesByOfficeType($order->getOfficeType());
         $orderData = [
             'id' => $order->getId(),
             'number' => $order->getNumber(),
@@ -187,12 +198,16 @@ class OrderService
             'pdf' => $order->getPdf(),
             'jpeg' => $order->getJpeg(),
             'receiptPdf' => $order->getReceiptPdf(),
+            'receiptEmployeeId' => $order->getReceiptEmployee()?->getId(),
+            'receiptEmployeeName' => $order->getReceiptEmployee()?->getFullName(),
+            'receiptAmount' => $order->getReceiptAmount(),
             'durationHours' => $order->getDurationHours(),
             'comment' => $order->getComment(),
             'officeType' => $order->getOfficeType()->value,
             'createdAt' => $order->getCreatedAt()->format('d.m.Y'),
             'isImportant' => $order->isImportant(),
             'isDeleted' => $order->isDeleted(),
+            'employees' => $employees,
         ];
 
 
@@ -202,14 +217,20 @@ class OrderService
     public function updateOrder($user, OrderDto $dto, ?FileBag $files = null): array
     {
         $order = $this->orderRepository->findOneBy(['id' => $dto->orderId]);
+        $durationHours = $this->normalizeDurationHours($dto->durationHours);
+        $officeType = OfficeType::from($dto->officeType);
+        $validationError = $this->validateDailyCapacity($dto->date, $officeType, $durationHours, $order->getId());
+        if ($validationError !== null) {
+            return ['error' => $validationError];
+        }
         $order->setNumber($dto->number);
         $order->setPhone($dto->phone);
         $order->setIsDeleted(false);
         $order->setIsFinished($this->resolveFinishedState($order, $dto->isFinished));
-        $order->setOfficeType(OfficeType::from($dto->officeType));
+        $order->setOfficeType($officeType);
         $order->setCreatedAt($dto->date);
         $order->setIsImportant($dto->isImportant);
-        $order->setDurationHours($this->normalizeDurationHours($dto->durationHours));
+        $order->setDurationHours($durationHours);
 
 
         if (!empty($files->get('pdf'))) {
@@ -238,9 +259,24 @@ class OrderService
         if (!$order) {
             return ['error' => 'Order not found'];
         }
+        if ($dto->employeeId === null || $dto->amount === null || $dto->amount === '') {
+            return ['error' => 'Заполните сотрудника и сумму'];
+        }
+        if (!is_numeric($dto->amount) || (float) $dto->amount <= 0) {
+            return ['error' => 'Сумма должна быть больше нуля'];
+        }
+        $employee = $this->employeeRepository->findOneBy([
+            'id' => $dto->employeeId,
+            'officeType' => $order->getOfficeType(),
+        ]);
+        if (!$employee) {
+            return ['error' => 'Сотрудник не найден'];
+        }
 
-        $filename = $this->generateReceiptPdf($order, $dto);
+        $filename = $this->generateReceiptPdf($order, $employee, $dto->amount);
         $order->setReceiptPdf($filename);
+        $order->setReceiptEmployee($employee);
+        $order->setReceiptAmount($dto->amount);
         $this->orderRepository->save($order);
 
         return ['receiptPdf' => $filename];
@@ -313,6 +349,31 @@ class OrderService
         return $durationHours;
     }
 
+    private function validateDailyCapacity(?\DateTimeImmutable $date, OfficeType $officeType, int $durationHours, ?int $excludeOrderId = null): ?string
+    {
+        if ($date === null) {
+            return null;
+        }
+
+        $totalHours = $this->orderRepository->getTotalDurationHoursByDay($date, $officeType, $excludeOrderId);
+        if (($totalHours + $durationHours) > 12) {
+            return 'Нельзя занять больше 12 часов на день';
+        }
+
+        return null;
+    }
+
+    private function getEmployeesByOfficeType(OfficeType $officeType): array
+    {
+        return array_map(
+            static fn (Employee $employee) => [
+                'id' => $employee->getId(),
+                'fullName' => $employee->getFullName(),
+            ],
+            $this->employeeRepository->findBy(['officeType' => $officeType], ['fullName' => 'ASC'])
+        );
+    }
+
     private function resolveFinishedState(Order $order, ?bool $isFinished): bool
     {
         if ($order->getReceiptPdf() === null) {
@@ -322,15 +383,15 @@ class OrderService
         return $isFinished ?? false;
     }
 
-    private function generateReceiptPdf(Order $order, ReceiptDto $dto): string
+    private function generateReceiptPdf(Order $order, Employee $employee, string $amount): string
     {
         $filename = sprintf('receipt_%s.pdf', md5(uniqid((string) $order->getId(), true)));
         $filepath = FileService::PATH_FILE . $filename;
 
         $lines = [
             'Receipt for order #' . $order->getNumber(),
-            'Name: ' . ($dto->fullName ?? ''),
-            'Amount: ' . ($dto->amount ?? ''),
+            'Employee: ' . $employee->getFullName(),
+            'Amount: ' . $amount,
         ];
 
         $content = $this->buildSimplePdf($lines);

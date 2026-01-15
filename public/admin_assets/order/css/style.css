@@ -54,6 +54,7 @@ body:not(.ea-content-width-full) .content-wrapper {
 .ribbon-5 {
     position: absolute;
     top: 0px;
+    left: -8px;
     filter: drop-shadow(2px 3px 2px rgba(0, 0, 0, 0.5));
 }
 .ribbon-5 span {

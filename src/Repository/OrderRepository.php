@@ -42,4 +42,27 @@ class OrderRepository extends AbstractBasicRepository
 
         return $builder->getQuery()->getResult();
     }
+
+    public function getTotalDurationHoursByDay(\DateTimeImmutable $date, OfficeType $officeType, ?int $excludeOrderId = null): int
+    {
+        $start = $date->setTime(0, 0, 0);
+        $end = $date->setTime(23, 59, 59);
+
+        $builder = $this->createQueryBuilder('o')
+            ->select('COALESCE(SUM(o.durationHours), 0)')
+            ->andWhere('o.officeType = :officeType')
+            ->andWhere('o.createdAt >= :start')
+            ->andWhere('o.createdAt <= :end')
+            ->andWhere('o.isDeleted = false')
+            ->setParameter('officeType', $officeType)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end);
+
+        if ($excludeOrderId !== null) {
+            $builder->andWhere('o.id != :excludeId')
+                ->setParameter('excludeId', $excludeOrderId);
+        }
+
+        return (int) $builder->getQuery()->getSingleScalarResult();
+    }
 }

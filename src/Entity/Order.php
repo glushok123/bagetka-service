@@ -61,6 +61,13 @@ class Order
     #[ORM\Column(name: 'receipt_pdf', length: 255, nullable: true)]
     private ?string $receiptPdf = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: 'receipt_employee_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?Employee $receiptEmployee = null;
+
+    #[ORM\Column(name: 'receipt_amount', length: 255, nullable: true)]
+    private ?string $receiptAmount = null;
+
     public function getJpeg(): ?string
     {
         return $this->jpeg;
@@ -91,6 +98,28 @@ class Order
     public function setReceiptPdf(?string $receiptPdf): static
     {
         $this->receiptPdf = $receiptPdf;
+        return $this;
+    }
+
+    public function getReceiptEmployee(): ?Employee
+    {
+        return $this->receiptEmployee;
+    }
+
+    public function setReceiptEmployee(?Employee $receiptEmployee): static
+    {
+        $this->receiptEmployee = $receiptEmployee;
+        return $this;
+    }
+
+    public function getReceiptAmount(): ?string
+    {
+        return $this->receiptAmount;
+    }
+
+    public function setReceiptAmount(?string $receiptAmount): static
+    {
+        $this->receiptAmount = $receiptAmount;
         return $this;
     }
 

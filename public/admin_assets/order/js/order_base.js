@@ -1,6 +1,10 @@
 var weekNumberMain = null;
 var dayWeek = null;
 var statusDayOnCreated = null;
+var receiptEmployees = [];
+var currentReceiptPdf = null;
+var currentReceiptEmployeeId = null;
+var currentReceiptAmount = null;
 
 function getDurationColumnSpan(durationHours) {
     var hours = parseInt(durationHours, 10);
@@ -28,6 +32,7 @@ function resetRowSlots(row) {
 }
 
 function updateReceiptState(receiptPdf) {
+    currentReceiptPdf = receiptPdf || null;
     if (receiptPdf) {
         $('#button-open-receipt').removeClass('hidden');
         $('#button-open-receipt').prop('href', '/upload/files/' + receiptPdf);
@@ -38,6 +43,34 @@ function updateReceiptState(receiptPdf) {
         $('#order-finished').prop('checked', false);
         $('#order-finished').prop('disabled', true);
     }
+}
+
+function setReceiptFormState(receiptPdf, employeeId, amount) {
+    var disabled = Boolean(receiptPdf);
+    $('#receipt-employee').prop('disabled', disabled);
+    $('#receipt-amount').prop('disabled', disabled);
+    $('#button-save-receipt').prop('disabled', disabled);
+
+    currentReceiptEmployeeId = employeeId || null;
+    currentReceiptAmount = amount || null;
+    $('#receipt-employee').val(employeeId || '');
+    $('#receipt-amount').val(amount || '');
+}
+
+function renderReceiptEmployees(employees, selectedId) {
+    receiptEmployees = employees || [];
+    var select = $('#receipt-employee');
+    select.empty();
+    select.append('<option value=\"\">Выберите сотрудника</option>');
+    receiptEmployees.forEach(function (employee) {
+        var option = $('<option></option>')
+            .val(employee.id)
+            .text(employee.fullName);
+        if (selectedId && String(employee.id) === String(selectedId)) {
+            option.prop('selected', true);
+        }
+        select.append(option);
+    });
 }
 
 function toggleReceiptOverlay(show) {
@@ -159,7 +192,6 @@ function getCollectionOrder(officeType = null, page = null) {
 }
 
 function getCollectionWeek(weekNumber = null) {
-    $('#block-spinner').show();
     $.ajax({
         url: '/order/get-collection-week',
         method: 'get',
@@ -178,7 +210,6 @@ function getCollectionWeek(weekNumber = null) {
                 className: "error",
                 backgroundColor: "#f00"
             }).showToast();
-            $('#block-spinner').hide();
         }
     });
 }
@@ -279,11 +310,18 @@ function saveOrder() {
         processData: false,
         data: formData,
         success: function (data) {
+            if (data.result && data.result.error) {
+                Toastify({
+                    text: data.result.error,
+                    close: true,
+                    className: "error",
+                    backgroundColor: "#f00"
+                }).showToast();
+                return;
+            }
             let tableNov = $('#table-novokuz');
             let tableAr = $('#table-arbat');
             let tableBar = $('#table-barricad');
-
-            $('#block-spinner').show();
 
             clearTable(tableNov)
             clearTable(tableAr)
@@ -302,8 +340,6 @@ function saveOrder() {
             addButtonCreateOrder(tableNov, 'Новокузнецкая');
             addButtonCreateOrder(tableAr, 'Арбатская');
             addButtonCreateOrder(tableBar, 'Баррикадная');
-
-            $('#block-spinner').hide();
 
             Toastify({
                 text: "Заказ добавлен",
@@ -377,7 +413,10 @@ function showOrder(orderId) {
                 $('input[name=isFinished]').prop('checked', false);
             }
 
+            renderReceiptEmployees(data.result.employees || [], data.result.receiptEmployeeId);
+            $('#receipt-amount').val(data.result.receiptAmount || '');
             updateReceiptState(data.result.receiptPdf);
+            setReceiptFormState(data.result.receiptPdf, data.result.receiptEmployeeId, data.result.receiptAmount);
 
             if(data.result.pdf === null){
                 $('#button-open-pdf').addClass('hidden');
@@ -406,7 +445,6 @@ function showOrder(orderId) {
                 className: "error",
                 backgroundColor: "#f00"
             }).showToast();
-            $('#block-spinner').hide();
         }
     });
 }
@@ -420,6 +458,8 @@ function clearFormOrder(officeType, date) {
     $('#button-open-pdf').removeClass('hidden');
     $('select[name=durationHours]').val('2');
     updateReceiptState(null);
+    renderReceiptEmployees([], null);
+    setReceiptFormState(null, null, null);
 
     var euro_date = date;
     euro_date = euro_date.split('.');
@@ -456,7 +496,6 @@ function deleteOrder() {
                     className: "error",
                     backgroundColor: "#f00"
                 }).showToast();
-                $('#block-spinner').hide();
             }
         });
     }
@@ -498,7 +537,6 @@ function updateStatusDay(type, officeType, date) {
                     className: "error",
                     backgroundColor: "#f00"
                 }).showToast();
-                $('#block-spinner').hide();
             }
         });
     }
@@ -618,8 +656,21 @@ $(document).on('click', '#button-create-receipt', function () {
         return;
     }
 
-    $('#receipt-full-name').val('');
-    $('#receipt-amount').val('');
+    if (receiptEmployees.length === 0) {
+        Toastify({
+            text: "Нет сотрудников для выбранной мастерской",
+            close: true,
+            className: "error",
+            backgroundColor: "#f00"
+        }).showToast();
+        return;
+    }
+
+    if (!currentReceiptPdf) {
+        $('#receipt-employee').val('');
+        $('#receipt-amount').val('');
+    }
+    setReceiptFormState(currentReceiptPdf, currentReceiptEmployeeId, currentReceiptAmount);
     showReceiptModal();
 });
 $(document).on('submit', '#receipt-form', function (event) {
@@ -636,6 +687,20 @@ $(document).on('submit', '#receipt-form', function (event) {
         return;
     }
 
+    var employeeId = $('#receipt-employee').val();
+    var amount = $('#receipt-amount').val();
+
+    var amountValue = parseFloat(amount);
+    if (!employeeId || !amount || isNaN(amountValue) || amountValue <= 0) {
+        Toastify({
+            text: "Выберите сотрудника и укажите сумму",
+            close: true,
+            className: "error",
+            backgroundColor: "#f00"
+        }).showToast();
+        return;
+    }
+
     toggleReceiptOverlay(true);
     $('#button-save-receipt').prop('disabled', true);
 
@@ -644,8 +709,8 @@ $(document).on('submit', '#receipt-form', function (event) {
         method: 'post',
         data: {
             'orderId': orderId,
-            'fullName': $('#receipt-full-name').val(),
-            'amount': $('#receipt-amount').val()
+            'employeeId': employeeId,
+            'amount': amount
         },
         success: function (data) {
             if (data.result.error) {
@@ -658,7 +723,10 @@ $(document).on('submit', '#receipt-form', function (event) {
                 return;
             }
 
+            currentReceiptEmployeeId = employeeId;
+            currentReceiptAmount = amount;
             updateReceiptState(data.result.receiptPdf);
+            setReceiptFormState(data.result.receiptPdf, employeeId, amount);
             Toastify({
                 text: "Чек сформирован",
                 close: true,

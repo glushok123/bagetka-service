@@ -96,8 +96,10 @@
             <form id="receipt-form" action="javascript:void(0);">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label" for="receipt-full-name">ФИО</label>
-                        <input type="text" class="form-control" id="receipt-full-name" name="fullName" required>
+                        <label class="form-label" for="receipt-employee">Сотрудник</label>
+                        <select class="form-select" id="receipt-employee" name="employeeId" required>
+                            <option value="">Выберите сотрудника</option>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="receipt-amount">Сумма</label>
