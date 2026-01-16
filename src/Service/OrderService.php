@@ -18,6 +18,10 @@ use DateInterval;
 use DateTime;
 use Symfony\Component\HttpFoundation\FileBag;
 use Symfony\Component\HttpFoundation\Request;
+use Mpdf\Mpdf;
+use Mpdf\Output\Destination;
+use Symfony\Component\Filesystem\Filesystem;
+use Twig\Environment;
 
 class OrderService
 {
@@ -26,6 +30,7 @@ class OrderService
         private readonly OrderRepository      $orderRepository,
         private readonly EmployeeRepository   $employeeRepository,
         private readonly FileService          $fileService,
+        private readonly Environment          $twig,
     )
     {
 
@@ -411,17 +416,108 @@ class OrderService
         $filename = sprintf('receipt_%s.pdf', md5(uniqid((string) $order->getId(), true)));
         $filepath = FileService::PATH_FILE . $filename;
 
-        $lines = [
-            'Receipt for order #' . $order->getNumber(),
-            'Employee: ' . $employee->getFullName(),
-            'Amount: ' . $amount,
+        (new Filesystem())->mkdir(\dirname($filepath));
+
+        $total = number_format((float)$amount, 2, '.', '');
+
+        $meta = $this->getReceiptMetaByOffice($order->getOfficeType());
+        [$addr1, $addr2] = $this->splitAddressToTwoLines($meta['address']);
+
+        $vars = [
+            'inn'   => $meta['inn'],
+            'sno'   => $meta['sno'],
+            'shift' => '1',
+
+            'kt'         => 'КТ0001',
+            'item_name'  => 'ОФОРМЛЕНИЕ В БАГЕТ',
+            'qty'        => '1.000',
+            'item_sum'   => $total,
+            'department' => '01',
+
+            'total'   => $total,
+            'cash'    => $total,
+            'внесено' => $total,
+            'сдача'   => '0.00',
+
+            'date'     => (new \DateTimeImmutable())->format('d.m.Y'),
+            'master'   => mb_strtoupper($employee->getFullName(), 'UTF-8'),
+            'check_no' => (string)$order->getId(),
+            'order_no' => (string)$order->getNumber(),
+
+            'ip_name'       => mb_strtoupper($meta['ip_name'], 'UTF-8'),
+            'address' => mb_strtoupper($meta['address'], 'UTF-8'),
+            'address_line1' => mb_strtoupper($addr1, 'UTF-8'),
+            'address_line2' => mb_strtoupper($addr2, 'UTF-8'),
+            'place'         => mb_strtoupper($meta['place'], 'UTF-8'),
         ];
 
-        $content = $this->buildSimplePdf($lines);
-        file_put_contents($filepath, $content);
+        $html = $this->twig->render('receipt/receipt.html.twig', $vars);
+
+        // 58mm ширина как у чека, высоту можно поставить с запасом
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => [58, 170],       // мм (если будет длиннее — увеличим)
+            'margin_left' => 0,
+            'margin_right' => 0,
+            'margin_top' => 0,
+            'margin_bottom' => 0,
+            'default_font' => 'dejavusans',
+            'tempDir' => sys_get_temp_dir(), // важно на хостингах с правами
+        ]);
+
+        $mpdf->WriteHTML($html);
+        $mpdf->Output($filepath, Destination::FILE);
 
         return $filename;
     }
+
+    private function splitAddressToTwoLines(string $address): array
+    {
+        $address = trim(preg_replace('/\s+/u', ' ', $address) ?? $address);
+
+        if (preg_match('/^(.*?,)\s*(Д\..*)$/ui', $address, $m)) {
+            return [trim($m[1]), trim($m[2])];
+        }
+
+        return [$address, ''];
+    }
+
+    private function getReceiptMetaByOffice(\App\Enum\OfficeType $officeType): array
+    {
+        // заполни под свои точки; здесь пример под Баррикадную
+        return match ($officeType) {
+            OfficeType::barricade => [
+                'inn'     => '500601498899',
+                'sno'     => 'ПАТЕНТ',
+                'ip_name' => 'ИП ВАСЮКОВ ИГОРЬ ГЕННАДЬЕВИЧ',
+                'address' => '123242,  Г. МОСКВА, УЛ. БАРРИКАДНАЯ, Д. 21/34 СТР. 3',
+                'place'   => 'БАГЕТНАЯ МАСТЕРСКАЯ №1',
+            ],
+            OfficeType::arbatskaya => [
+                'inn'     => '500601498899',
+                'sno'     => 'ПАТЕНТ',
+                'ip_name' => 'ИП ВАСЮКОВ ИГОРЬ ГЕННАДЬЕВИЧ',
+                'address' => '119019, г. москва, ул. Арбат, д.1',
+                'place'   => 'БАГЕТНАЯ МАСТЕРСКАЯ №1',
+            ],
+            OfficeType::novokuznetsk => [
+                'inn'     => '500601498899',
+                'sno'     => 'ПАТЕНТ',
+                'ip_name' => 'ИП ВАСЮКОВ ИГОРЬ ГЕННАДЬЕВИЧ',
+                'address' => '115184, г. москва, пер. Климентовский, д. 6',
+                'place'   => 'БАГЕТНАЯ МАСТЕРСКАЯ №1',
+            ],
+            default => [
+                'inn'     => '500601498899',
+                'sno'     => 'ПАТЕНТ',
+                'ip_name' => 'ИП ВАСЮКОВ ИГОРЬ ГЕННАДЬЕВИЧ',
+                'address' => '123242,  Г. МОСКВА, УЛ. БАРРИКАДНАЯ, Д. 21/34 СТР. 3',
+                'place'   => 'БАГЕТНАЯ МАСТЕРСКАЯ №1',
+            ],
+        };
+    }
+
+
 
     private function buildSimplePdf(array $lines): string
     {

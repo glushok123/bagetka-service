@@ -1,0 +1,168 @@
+{# templates/receipt/receipt.html.twig #}
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page { margin: 0; }
+
+        body {
+            margin: 0;
+            font-family: "Arial Narrow", Arial, sans-serif;
+            font-stretch: condensed; /* иногда помогает, но не гарантирует Arial Narrow */
+            color: #000;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .page {
+            width: 56mm;
+            padding: 4mm 3mm;
+            box-sizing: border-box;
+        }
+
+        .center { text-align: center; }
+
+        .title {
+            font-weight: 800;
+            font-size: 12px;
+            margin: 2px 0 0;
+            letter-spacing: 0.2px;
+        }
+        .subtitle {
+            font-weight: 800;
+            font-size: 12px;
+            margin: 2px 0 0;
+        }
+        .small-center {
+            font-weight: 700;
+            font-size: 10px;
+            margin: 2px 0 0;
+        }
+
+        table.kv, table.twocol {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table.kv td, table.twocol td {
+            padding: 2px 0;
+            vertical-align: baseline;
+        }
+        .k { font-weight: 700; }
+        .v { font-weight: 700; text-align: right; }
+
+        .stars {
+            font-family: "DejaVu Sans Mono", "Courier New", monospace;
+            white-space: nowrap;
+            font-size: 10px;
+            margin: 8px 0 6px;
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .line {
+            font-weight: 700;
+            margin: 2px 0;
+        }
+        .line.bold { font-weight: 800; }
+
+        .right { text-align: right; font-weight: 700; margin: 2px 0; }
+
+        .total {
+            width: 100%;
+
+            margin: 10px 0 6px;
+        }
+        .total td {
+            padding: 0;
+            font-weight: 900;
+            font-size: 16px;
+        }
+
+        .footer-title {
+            font-weight: 900;
+            font-size: 10px;
+            text-align: center;
+            margin-top: 8px;
+            margin-bottom: 10px;
+        }
+
+        .gap { margin-top: 8px; }
+        .qty{
+            padding-left: 40px;
+        }
+        .mt-5{
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="page">
+    <div class="center title">КАССОВЫЙ ЧЕК</div>
+    <div class="center subtitle">ПРИХОД</div>
+    <div class="center small-center">КАССА ВНУТРЕННЕЙ ОТЧЕТНОСТИ</div>
+
+    <div class="gap"></div>
+    <table class="kv">
+        <tr><td class="k">ИНН</td><td class="v">{{ inn }}</td></tr>
+        <tr><td class="k">СНО</td><td class="v">{{ sno }}</td></tr>
+        <tr><td class="k">СМЕНА</td><td class="v">{{ shift }}</td></tr>
+    </table>
+
+    <div class="stars">********************************</div>
+
+    <div class="line bold">{{ kt }}</div>
+    <div class="line bold">{{ item_name }}</div>
+
+    <table class="twocol">
+        <tr><td class="k qty">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#{{ qty }}</td><td class="v">*{{ item_sum }}</td></tr>
+    </table>
+
+    <div class="line">ОТДЕЛ {{ department }}</div>
+    <div class="right">*{{ item_sum }}</div>
+
+    <div class="stars">********************************</div>
+
+    <table class="total">
+        <tr>
+            <td class="k">ИТОГ</td>
+            <td class="v">*{{ total }}</td>
+        </tr>
+    </table>
+
+    <div class="line gap">СУММА БЕЗ НДС</div>
+    <div class="right">*{{ total }}</div>
+
+    <div class="line gap">НАЛИЧНЫМИ</div>
+    <div class="right">*{{ cash }}</div>
+
+    <table class="twocol gap">
+        <tr><td class="k">ВНЕСЕНО</td><td class="v">*{{ внесено }}</td></tr>
+        <tr><td class="k">СДАЧА</td><td class="v">*{{ сдача }}</td></tr>
+    </table>
+
+    <div class="stars">********************************</div>
+
+    <table class="twocol">
+        <tr><td class="k">ДАТА</td><td class="v">{{ date }}</td></tr>
+        <tr><td class="k">МАСТЕР</td><td class="v">{{ master }}</td></tr>
+        <tr><td class="k">ЧЕК</td><td class="v">№{{ check_no }}</td></tr>
+        <tr><td class="k">НОМЕР ЗАКАЗА</td><td class="v">№{{ order_no }}</td></tr>
+    </table>
+
+    <div class="stars">********************************</div>
+
+    <div class="footer-title">{{ ip_name }}</div>
+    <div class="line">{{ address }}</div>
+    <!--div class="line">{{ address_line1 }}</div>
+    <div class="line">{{ address_line2 }}</div-->
+
+    <div class="line gap ">МЕСТО РАСЧЕТОВ:</div>
+    <div class="right">{{ place }}</div>
+
+    <div class="stars">********************************</div>
+</div>
+</body>
+</html>

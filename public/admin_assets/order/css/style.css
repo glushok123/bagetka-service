@@ -70,9 +70,7 @@ body:not(.ea-content-width-full) .content-wrapper {
 .create-order-button{
 
 }
-.hidden{
-    display: none;
-}
+
 td, th{
     max-width: 150px !important;
 }
@@ -88,4 +86,8 @@ td, th{
     align-items: center;
     justify-content: center;
     z-index: 2000;
+}
+
+.hidden{
+    display: none !important;
 }
