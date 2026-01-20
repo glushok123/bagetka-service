@@ -1,7 +1,123 @@
 var weekNumberMain = null;
 var dayWeek = null;
 var statusDayOnCreated = null;
+var receiptEmployees = [];
+var currentReceiptPdf = null;
+var currentReceiptEmployeeId = null;
+var currentReceiptAmount = null;
+var currentReceiptLocked = false;
 
+function getDurationColumnSpan(durationHours) {
+    var hours = parseInt(durationHours, 10);
+    if (isNaN(hours) || hours <= 0) {
+        return 1;
+    }
+    return Math.max(1, Math.min(6, hours / 2));
+}
+
+function isCellEmpty(cell) {
+    return $.trim(cell.html()) === '';
+}
+
+function resetRowSlots(row) {
+    var cells = row.find('td');
+    if (cells.length === 0) {
+        return;
+    }
+    var statusCell = cells.last();
+    cells.not(statusCell).remove();
+    for (var i = 1; i <= 6; i++) {
+        $('<td class="order-slot" data-slot="' + i + '"></td>').insertBefore(statusCell);
+    }
+    statusCell.html('');
+}
+
+function updateReceiptState(receiptPdf) {
+    currentReceiptPdf = receiptPdf || null;
+    if (receiptPdf) {
+        $('#button-open-receipt').removeClass('hidden');
+        $('#button-open-receipt').prop('href', '/upload/files/' + receiptPdf);
+        $('#order-finished').prop('disabled', false);
+    } else {
+        $('#button-open-receipt').addClass('hidden');
+        $('#button-open-receipt').prop('href', '');
+        $('#order-finished').prop('checked', false);
+        $('#order-finished').prop('disabled', true);
+    }
+}
+
+function setReceiptFormState(receiptPdf, employeeId, amount) {
+    currentReceiptEmployeeId = employeeId || null;
+    currentReceiptAmount = amount || null;
+    var employeeName = '';
+    if (currentReceiptEmployeeId) {
+        var selected = $('#receipt-employee option[value="' + currentReceiptEmployeeId + '"]');
+        if (selected.length > 0) {
+            employeeName = selected.text();
+        }
+    }
+    $('#receipt-employee-name').val(employeeName);
+    $('#receipt-amount-view').val(amount || '');
+}
+
+$(document).on('change', '#receipt-employee', function () {
+    setReceiptFormState(currentReceiptPdf, $(this).val(), currentReceiptAmount);
+});
+
+function renderReceiptEmployees(employees, selectedId) {
+    receiptEmployees = employees || [];
+    var select = $('#receipt-employee');
+    select.empty();
+    select.append('<option value=\"\">Выберите сотрудника</option>');
+    receiptEmployees.forEach(function (employee) {
+        var option = $('<option></option>')
+            .val(employee.id)
+            .text(employee.fullName);
+        if (selectedId && String(employee.id) === String(selectedId)) {
+            option.prop('selected', true);
+        }
+        select.append(option);
+    });
+    if (selectedId) {
+        setReceiptFormState(currentReceiptPdf, selectedId, currentReceiptAmount);
+    }
+}
+
+function toggleReceiptOverlay(show) {
+    if (show) {
+        $('#receipt-overlay').removeClass('hidden');
+    } else {
+        $('#receipt-overlay').addClass('hidden');
+    }
+}
+
+function setOrderFormLocked(isLocked) {
+    currentReceiptLocked = Boolean(isLocked);
+    $('#data-order')
+        .find('input, select, textarea, button')
+        .not('[data-bs-dismiss]')
+        .not('#button-open-pdf, #button-open-jpeg, #button-open-receipt')
+        .prop('disabled', currentReceiptLocked);
+    if (!currentReceiptLocked) {
+        $('#button-create-receipt').prop('disabled', false);
+    }
+}
+
+function showReceiptModal() {
+    var modalEl = document.getElementById('receiptModal');
+    if (!modalEl || typeof bootstrap === 'undefined') {
+        return;
+    }
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+}
+
+function hideReceiptModal() {
+    var modalEl = document.getElementById('receiptModal');
+    if (!modalEl || typeof bootstrap === 'undefined') {
+        return;
+    }
+    bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+}
 function getCollectionOrder(officeType = null, page = null) {
     $.ajax({
         url: '/order/get-collection',
@@ -24,38 +140,62 @@ function getCollectionOrder(officeType = null, page = null) {
 
             for (let order of data.result) {
                 let row = $(tableID + " span:contains(" + order.createdAt + ")").parents('tr')
-                let columns = row.children('td');
+                let span = getDurationColumnSpan(order.durationHours);
+                let placed = false;
 
-                columns.each(function () {
-                    if ($(this).html() === "" || $(this).html() === " ") {
-                        let classOrder = ''
-                        let blockImpotent = ''
-
-                        if (order.isCreateManager === true) {
-                            classOrder = 'create-manager'
-                        }
-                        if (order.isFinished === true) {
-                            classOrder = 'create-finished'
-                        }
-                        if (order.isImportant === true) {
-                            blockImpotent = "<div class='ribbon-5'><span>*</span></div>"
-                        }
-                        if (order.isExpired === true && order.isFinished !== true) {
-                            classOrder = 'isExpired'
-                        }
-
-                        let orderHtml = "" +
-                            "<div class='show-order order " + classOrder + "' " +
-                            "data-bs-toggle='offcanvas' data-bs-target='#offcanvasExample' aria-controls='offcanvasExample'" +
-                            "data-officeType='" + officeType + "' " +
-                            "data-orderId='" + order.id + "'>" +
-                            "Заказ №" + order.number + "" +
-                            blockImpotent +
-                            "</div>"
-                        $(this).html(orderHtml)
-                        return false;
+                for (let slot = 1; slot <= 6; slot++) {
+                    let cell = row.find('td.order-slot[data-slot="' + slot + '"]');
+                    if (cell.length === 0 || !isCellEmpty(cell)) {
+                        continue;
                     }
-                });
+
+                    let canFit = true;
+                    for (let offset = 0; offset < span; offset++) {
+                        let nextCell = row.find('td.order-slot[data-slot="' + (slot + offset) + '"]');
+                        if (nextCell.length === 0 || !isCellEmpty(nextCell)) {
+                            canFit = false;
+                            break;
+                        }
+                    }
+
+                    if (!canFit) {
+                        continue;
+                    }
+
+                    let classOrder = ''
+                    let blockImpotent = ''
+
+                    if (order.isCreateManager === true) {
+                        classOrder = 'create-manager'
+                    }
+                    if (order.isFinished === true) {
+                        classOrder = 'create-finished'
+                    }
+                    if (order.isImportant === true) {
+                        blockImpotent = "<div class='ribbon-5'><span>*</span></div>"
+                    }
+                    if (order.isExpired === true && order.isFinished !== true) {
+                        classOrder = 'isExpired'
+                    }
+
+                    let orderHtml = "" +
+                        "<div class='show-order order " + classOrder + "' " +
+                        "data-bs-toggle='offcanvas' data-bs-target='#offcanvasExample' aria-controls='offcanvasExample' " +
+                        "data-officeType='" + officeType + "' " +
+                        "data-orderId='" + order.id + "'>" +
+                        "Заказ №" + order.number +
+                        "<div class='order-hours'>" + (order.durationHours || 2) + " ч</div>" +
+                        blockImpotent +
+                        "</div>"
+
+                    cell.attr('colspan', span);
+                    cell.html(orderHtml);
+                    for (let offset = 1; offset < span; offset++) {
+                        row.find('td.order-slot[data-slot="' + (slot + offset) + '"]').remove();
+                    }
+                    placed = true;
+                    break;
+                }
 
                 //columns[0].text(order.number)
 
@@ -74,7 +214,6 @@ function getCollectionOrder(officeType = null, page = null) {
 }
 
 function getCollectionWeek(weekNumber = null) {
-    $('#block-spinner').show();
     $.ajax({
         url: '/order/get-collection-week',
         method: 'get',
@@ -93,37 +232,33 @@ function getCollectionWeek(weekNumber = null) {
                 className: "error",
                 backgroundColor: "#f00"
             }).showToast();
-            $('#block-spinner').hide();
         }
     });
 }
 
 function clearTable(table) {
-    let columns = table.find('td');
-    columns.each(function () {
-        $(this).html(" ")
-    })
+    let rows = table.find('tr');
+    rows.each(function () {
+        resetRowSlots($(this));
+    });
 }
 
 function addButtonCreateOrder(table, officeType) {
     let rows = table.find('tr');
 
     rows.each(function () {
-        let columns = $(this).find('td');
         let date = $(this).find('th span').text();
-
-        columns.each(function () {
-            if ($(this).html() === "" || $(this).html() === " ") {
-                $(this).parent('tr').find('but-update-status-day')
-
-                $(this).html("<button type='button' class='btn btn-secondary create-order-button' " +
+        for (let slot = 1; slot <= 6; slot++) {
+            let cell = $(this).find('td.order-slot[data-slot="' + slot + '"]');
+            if (cell.length > 0 && isCellEmpty(cell)) {
+                cell.html("<button type='button' class='btn btn-secondary create-order-button' " +
                     "data-office-type='" + officeType + "'" +
                     "data-date='" + date + "'" +
                     "data-bs-toggle='offcanvas' data-bs-target='#offcanvasExample' aria-controls='offcanvasExample'" +
-                    ">+</button>")
-                return false;
+                    ">+</button>");
+                break;
             }
-        })
+        }
     })
 }
 
@@ -197,11 +332,18 @@ function saveOrder() {
         processData: false,
         data: formData,
         success: function (data) {
+            if (data.result && data.result.error) {
+                Toastify({
+                    text: data.result.error,
+                    close: true,
+                    className: "error",
+                    backgroundColor: "#f00"
+                }).showToast();
+                return;
+            }
             let tableNov = $('#table-novokuz');
             let tableAr = $('#table-arbat');
             let tableBar = $('#table-barricad');
-
-            $('#block-spinner').show();
 
             clearTable(tableNov)
             clearTable(tableAr)
@@ -220,8 +362,6 @@ function saveOrder() {
             addButtonCreateOrder(tableNov, 'Новокузнецкая');
             addButtonCreateOrder(tableAr, 'Арбатская');
             addButtonCreateOrder(tableBar, 'Баррикадная');
-
-            $('#block-spinner').hide();
 
             Toastify({
                 text: "Заказ добавлен",
@@ -268,6 +408,7 @@ function showOrder(orderId) {
             var us_date = euro_date.reverse().join('-');
 
             $('input[name=date]').val(us_date)
+            $('select[name=durationHours]').val(data.result.durationHours || 2);
 
             //$("select[name=officeType] option[value=Новокузнецкая]").prop('selected', false);
             //$("select[name=officeType] option[value=Арбатская]").prop('selected', false);
@@ -293,6 +434,12 @@ function showOrder(orderId) {
             } else {
                 $('input[name=isFinished]').prop('checked', false);
             }
+
+            renderReceiptEmployees(data.result.employees || [], data.result.receiptEmployeeId);
+            $('#receipt-amount').val(data.result.receiptAmount || '');
+            updateReceiptState(data.result.receiptPdf);
+            setReceiptFormState(data.result.receiptPdf, data.result.receiptEmployeeId, data.result.receiptAmount);
+            setOrderFormLocked(data.result.isLocked);
 
             if(data.result.pdf === null){
                 $('#button-open-pdf').addClass('hidden');
@@ -321,7 +468,6 @@ function showOrder(orderId) {
                 className: "error",
                 backgroundColor: "#f00"
             }).showToast();
-            $('#block-spinner').hide();
         }
     });
 }
@@ -333,6 +479,11 @@ function clearFormOrder(officeType, date) {
     $('input[name=isFinished]').prop('checked', false);
     $('input[name=isImportant]').prop('checked', false);
     $('#button-open-pdf').removeClass('hidden');
+    $('select[name=durationHours]').val('2');
+    updateReceiptState(null);
+    renderReceiptEmployees([], null);
+    setReceiptFormState(null, null, null);
+    setOrderFormLocked(false);
 
     var euro_date = date;
     euro_date = euro_date.split('.');
@@ -369,7 +520,6 @@ function deleteOrder() {
                     className: "error",
                     backgroundColor: "#f00"
                 }).showToast();
-                $('#block-spinner').hide();
             }
         });
     }
@@ -411,7 +561,6 @@ function updateStatusDay(type, officeType, date) {
                     className: "error",
                     backgroundColor: "#f00"
                 }).showToast();
-                $('#block-spinner').hide();
             }
         });
     }
@@ -519,4 +668,120 @@ $(document).on('click', '.but-update-status-day ', function () {
 });
 $(document).on('click', '.show-order', function () {
     showOrder($(this).data('orderid'));
+});
+$(document).on('click', '#button-create-receipt', function () {
+    if ($('input[name=orderId]').val() === '0') {
+        Toastify({
+            text: "Сначала сохраните заказ",
+            close: true,
+            className: "error",
+            backgroundColor: "#f00"
+        }).showToast();
+        return;
+    }
+
+    if (receiptEmployees.length === 0) {
+        Toastify({
+            text: "Нет сотрудников для выбранной мастерской",
+            close: true,
+            className: "error",
+            backgroundColor: "#f00"
+        }).showToast();
+        return;
+    }
+
+    if (currentReceiptLocked) {
+        Toastify({
+            text: "Заказ закрыт для изменений",
+            close: true,
+            className: "error",
+            backgroundColor: "#f00"
+        }).showToast();
+        return;
+    }
+
+    if (currentReceiptPdf) {
+        $('#receipt-employee').val(currentReceiptEmployeeId || '');
+        $('#receipt-amount').val(currentReceiptAmount || '');
+    } else {
+        $('#receipt-employee').val('');
+        $('#receipt-amount').val('');
+    }
+    showReceiptModal();
+});
+$(document).on('submit', '#receipt-form', function (event) {
+    event.preventDefault();
+
+    var orderId = $('input[name=orderId]').val();
+    if (orderId === '0') {
+        Toastify({
+            text: "Сначала сохраните заказ",
+            close: true,
+            className: "error",
+            backgroundColor: "#f00"
+        }).showToast();
+        return;
+    }
+
+    var employeeId = $('#receipt-employee').val();
+    var amount = $('#receipt-amount').val();
+
+    var amountValue = parseFloat(amount);
+    if (!employeeId || !amount || isNaN(amountValue) || amountValue <= 0) {
+        Toastify({
+            text: "Выберите сотрудника и укажите сумму",
+            close: true,
+            className: "error",
+            backgroundColor: "#f00"
+        }).showToast();
+        return;
+    }
+
+    toggleReceiptOverlay(true);
+    $('#button-save-receipt').prop('disabled', true);
+
+    $.ajax({
+        url: '/order/create-receipt',
+        method: 'post',
+        data: {
+            'orderId': orderId,
+            'employeeId': employeeId,
+            'amount': amount
+        },
+        success: function (data) {
+            if (data.result.error) {
+                Toastify({
+                    text: data.result.error,
+                    close: true,
+                    className: "error",
+                    backgroundColor: "#f00"
+                }).showToast();
+                return;
+            }
+
+            currentReceiptEmployeeId = employeeId;
+            currentReceiptAmount = amount;
+            updateReceiptState(data.result.receiptPdf);
+            setReceiptFormState(data.result.receiptPdf, employeeId, amount);
+            Toastify({
+                text: "Чек сформирован",
+                close: true,
+                className: "success",
+                backgroundColor: "#11ff00"
+            }).showToast();
+            hideReceiptModal();
+        },
+        error: function () {
+            Toastify({
+                text: "Не удалось сформировать чек",
+                close: true,
+                className: "error",
+                backgroundColor: "#f00"
+            }).showToast();
+        },
+        complete: function () {
+            toggleReceiptOverlay(false);
+            $('#button-save-receipt').prop('disabled', false);
+        }
+    });
 });

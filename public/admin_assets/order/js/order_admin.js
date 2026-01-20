@@ -10,8 +10,6 @@ $(document).ready(function () {
     updateWeekDay()
 
     function updateWeekDay(weekNumberNew = null){
-        $('#block-spinner').show();
-
         clearTable(tableNov)
         clearTable(tableAr)
         clearTable(tableBar)
@@ -30,7 +28,6 @@ $(document).ready(function () {
         addButtonCreateOrder(tableAr, 'Арбатская');
         addButtonCreateOrder(tableBar, 'Баррикадная');
 
-        $('#block-spinner').hide();
     }
 
     $(document).on('click', '.but-pagination.left', function () {

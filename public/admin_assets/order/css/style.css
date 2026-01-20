@@ -27,14 +27,18 @@ body:not(.ea-content-width-full) .content-wrapper {
 }
 .order{
     height: 50px;
-    width: 110px;
+    width: 100%;
     border-radius: 20px;
     background: #fbfc9d;
     text-align: center;
-    line-height: 50px;
+    line-height: 1.2;
     font-weight:bold;
     cursor: pointer;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 .create-manager{
     background: #facb84;
@@ -50,6 +54,7 @@ body:not(.ea-content-width-full) .content-wrapper {
 .ribbon-5 {
     position: absolute;
     top: 0px;
+    left: -8px;
     filter: drop-shadow(2px 3px 2px rgba(0, 0, 0, 0.5));
 }
 .ribbon-5 span {
@@ -65,9 +70,24 @@ body:not(.ea-content-width-full) .content-wrapper {
 .create-order-button{
 
 }
-.hidden{
-    display: none;
-}
+
 td, th{
     max-width: 150px !important;
+}
+.order-hours{
+    font-size: 12px;
+    font-weight: normal;
+}
+.receipt-overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.hidden{
+    display: none !important;
 }

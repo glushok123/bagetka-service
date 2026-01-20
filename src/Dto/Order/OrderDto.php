@@ -19,6 +19,7 @@ class OrderDto extends BasicDto
         public readonly ?bool              $isImportant = null,
         public readonly ?bool              $isDeleted = null,
         public readonly ?bool              $isFinished = null,
+        public readonly ?int               $durationHours = null,
         public readonly ?string            $officeType = null,
         public readonly ?DateTimeImmutable $createdAt = null,
         public readonly ?DateTimeImmutable $date = null,

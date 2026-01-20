@@ -9,8 +9,14 @@
 
     {% include '/order/show-offcanvas.html.twig' %}
 
+    <div class="receipt-overlay hidden" id="receipt-overlay">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
 
-    <div class="row text-center justify-content-center mb-2 " id="block-spinner">
+
+    <div class="row text-center justify-content-center mb-2 hidden" id="block-spinner">
         <div class="spinner-border" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>

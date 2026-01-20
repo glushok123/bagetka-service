@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Dto\User\UserDto;
 use App\Entity\Embeddable\Hash;
+use App\Entity\Employee;
 use App\Entity\Materials;
 use App\Entity\Order;
 use App\Entity\User;
@@ -54,6 +55,7 @@ class DashboardController extends AbstractDashboardController
         //yield MenuItem::linkToCrud('Материалы (список)', 'fas fa-list', Materials::class);
         //yield MenuItem::linkToCrud('Доставка (список)', 'fas fa-list', Delivery::class);
 
+        yield MenuItem::linkToCrud('Сотрудники', 'fas fa-users', Employee::class)->setPermission('ROLE_ADMIN');
         yield MenuItem::linkToRoute('Заказы (Календарь)', 'fas fa-calendar', 'order_index');
         yield MenuItem::linkToRoute('Материалы (Календарь)', 'fas fa-calendar', 'materials_index');
     }

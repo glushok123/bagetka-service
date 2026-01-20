@@ -55,6 +55,22 @@ class Order
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $jpeg = null;
 
+    #[ORM\Column(name: 'duration_hours', type: Types::INTEGER, options: ['default' => 2])]
+    private int $durationHours = 2;
+
+    #[ORM\Column(name: 'receipt_pdf', length: 255, nullable: true)]
+    private ?string $receiptPdf = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: 'receipt_employee_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?Employee $receiptEmployee = null;
+
+    #[ORM\Column(name: 'receipt_amount', length: 255, nullable: true)]
+    private ?string $receiptAmount = null;
+
+    #[ORM\Column(name: 'receipt_created_at', nullable: true)]
+    private ?\DateTimeImmutable $receiptCreatedAt = null;
+
     public function getJpeg(): ?string
     {
         return $this->jpeg;
@@ -66,6 +82,60 @@ class Order
         return $this;
     }
 
+    public function getDurationHours(): int
+    {
+        return $this->durationHours;
+    }
+
+    public function setDurationHours(int $durationHours): static
+    {
+        $this->durationHours = $durationHours;
+        return $this;
+    }
+
+    public function getReceiptPdf(): ?string
+    {
+        return $this->receiptPdf;
+    }
+
+    public function setReceiptPdf(?string $receiptPdf): static
+    {
+        $this->receiptPdf = $receiptPdf;
+        return $this;
+    }
+
+    public function getReceiptEmployee(): ?Employee
+    {
+        return $this->receiptEmployee;
+    }
+
+    public function setReceiptEmployee(?Employee $receiptEmployee): static
+    {
+        $this->receiptEmployee = $receiptEmployee;
+        return $this;
+    }
+
+    public function getReceiptAmount(): ?string
+    {
+        return $this->receiptAmount;
+    }
+
+    public function setReceiptAmount(?string $receiptAmount): static
+    {
+        $this->receiptAmount = $receiptAmount;
+        return $this;
+    }
+
+    public function getReceiptCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->receiptCreatedAt;
+    }
+
+    public function setReceiptCreatedAt(?\DateTimeImmutable $receiptCreatedAt): static
+    {
+        $this->receiptCreatedAt = $receiptCreatedAt;
+        return $this;
+    }
 
     public function getOfficeType(): ?OfficeType
     {
