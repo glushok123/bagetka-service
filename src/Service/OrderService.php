@@ -423,10 +423,12 @@ class OrderService
         $meta = $this->getReceiptMetaByOffice($order->getOfficeType());
         [$addr1, $addr2] = $this->splitAddressToTwoLines($meta['address']);
 
+        $now = new \DateTimeImmutable();
+
         $vars = [
             'inn'   => $meta['inn'],
             'sno'   => $meta['sno'],
-            'shift' => '1',
+            'shift' => $now->format('j'),
 
             'kt'         => 'КТ0001',
             'item_name'  => 'ОФОРМЛЕНИЕ В БАГЕТ',
