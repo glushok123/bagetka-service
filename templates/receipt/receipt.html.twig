@@ -11,7 +11,7 @@
             font-family: "Arial Narrow", Arial, sans-serif;
             font-stretch: condensed; /* иногда помогает, но не гарантирует Arial Narrow */
             color: #000;
-            font-size: 10px;
+            font-size: 8px;
             font-weight: bold;
         }
 
@@ -45,7 +45,7 @@
             border-collapse: collapse;
         }
         table.kv td, table.twocol td {
-            padding: 2px 0;
+            padding: 1px 0;
             vertical-align: baseline;
         }
         .k { font-weight: 700; }
@@ -77,7 +77,7 @@
         .total td {
             padding: 0;
             font-weight: 900;
-            font-size: 8px;
+            font-size: 14px;
         }
 
         .footer-title {
@@ -111,7 +111,7 @@
         <tr><td class="k">СМЕНА</td><td class="v">{{ shift }}</td></tr>
     </table>
 
-    <div class="stars">********************************</div>
+    <div class="stars">******************************</div>
 
     <div class="line bold">{{ kt }}</div>
     <div class="line bold">{{ item_name }}</div>
@@ -123,7 +123,7 @@
     <div class="line">ОТДЕЛ {{ department }}</div>
     <div class="right">*{{ item_sum }}</div>
 
-    <div class="stars">********************************</div>
+    <div class="stars">******************************</div>
 
     <table class="total">
         <tr>
@@ -143,7 +143,7 @@
         <tr><td class="k">СДАЧА</td><td class="v">*{{ сдача }}</td></tr>
     </table>
 
-    <div class="stars">********************************</div>
+    <div class="stars">******************************</div>
 
     <table class="twocol">
         <tr><td class="k">ДАТА</td><td class="v">{{ date }}</td></tr>
@@ -152,7 +152,7 @@
         <tr><td class="k">НОМЕР ЗАКАЗА</td><td class="v">№{{ order_no }}</td></tr>
     </table>
 
-    <div class="stars">********************************</div>
+    <div class="stars">******************************</div>
 
     <div class="footer-title">{{ ip_name }}</div>
     <div class="line">{{ address }}</div>
@@ -162,7 +162,7 @@
     <div class="line gap ">МЕСТО РАСЧЕТОВ:</div>
     <div class="right">{{ place }}</div>
 
-    <div class="stars">********************************</div>
+    <div class="stars">******************************</div>
 </div>
 </body>
 </html>
