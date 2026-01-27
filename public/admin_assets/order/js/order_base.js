@@ -37,12 +37,9 @@ function updateReceiptState(receiptPdf) {
     if (receiptPdf) {
         $('#button-open-receipt').removeClass('hidden');
         $('#button-open-receipt').prop('href', '/upload/files/' + receiptPdf);
-        $('#order-finished').prop('disabled', false);
     } else {
         $('#button-open-receipt').addClass('hidden');
         $('#button-open-receipt').prop('href', '');
-        $('#order-finished').prop('checked', false);
-        $('#order-finished').prop('disabled', true);
     }
 }
 

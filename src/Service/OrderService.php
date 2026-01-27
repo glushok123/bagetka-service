@@ -217,7 +217,7 @@ class OrderService
             'createdAt' => $order->getCreatedAt()->format('d.m.Y'),
             'isImportant' => $order->isImportant(),
             'isDeleted' => $order->isDeleted(),
-            'isLocked' => $this->isReceiptLocked($order),
+            'isLocked' => $this->isReceiptLocked($order) && $user->getRole()->value !== 'Админ',
             'employees' => $employees,
         ];
 
@@ -228,7 +228,7 @@ class OrderService
     public function updateOrder($user, OrderDto $dto, ?FileBag $files = null): array
     {
         $order = $this->orderRepository->findOneBy(['id' => $dto->orderId]);
-        if ($this->isReceiptLocked($order)) {
+        if ($this->isReceiptLocked($order) && $user->getRole()->value !== 'Админ') {
             return ['error' => 'Заказ закрыт для изменений'];
         }
         $durationHours = $this->normalizeDurationHours($dto->durationHours);
@@ -404,10 +404,6 @@ class OrderService
 
     private function resolveFinishedState(Order $order, ?bool $isFinished): bool
     {
-        if ($order->getReceiptPdf() === null) {
-            return false;
-        }
-
         return $isFinished ?? false;
     }
 
