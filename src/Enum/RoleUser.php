@@ -16,10 +16,10 @@ enum RoleUser: string implements ReadableEnumInterface
     #[EnumCase(extras: ['nameRu' => 'Админ'])]
     case admin = 'Админ';
 
-   #[EnumCase(extras: ['nameRu' => 'Арбатская'])]
+   #[EnumCase(extras: ['nameRu' => 'Менеджер'])]
     case manager = 'Менеджер';
 
-    #[EnumCase(extras: ['nameRu' => 'Баррикадная'])]
+    #[EnumCase(extras: ['nameRu' => 'Мастер'])]
     case master = 'Мастер';
 
 }
